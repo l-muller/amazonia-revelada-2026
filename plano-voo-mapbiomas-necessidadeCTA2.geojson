@@ -1,0 +1,10 @@
+{
+"type": "FeatureCollection",
+"name": "plano-voo-mapbiomas-necessidadeCTA2",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": null, "Name": "BORBA - SWBR", "description": null, "timestamp": null, "begin": null, "end": null, "altitudeMode": null, "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -59.602379386767218, -4.405674006833571, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": null, "Name": "HUMAITÁ - SWHS", "description": null, "timestamp": null, "begin": null, "end": null, "altitudeMode": null, "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -63.068085738544127, -7.537330484915735, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": null, "Name": "MANICORÉ - SBMY", "description": null, "timestamp": null, "begin": null, "end": null, "altitudeMode": null, "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -61.278385650695881, -5.810060785903484, 0.0 ] } }
+]
+}
