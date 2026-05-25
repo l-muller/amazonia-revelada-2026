@@ -16,7 +16,6 @@
       font-family: 'Segoe UI', system-ui, sans-serif;
     }
 
-    /* ── Painel lateral ── */
     #painel {
       position: absolute;
       top: 0;
@@ -71,7 +70,6 @@
       margin-bottom: 10px;
     }
 
-    /* Toggle de camadas */
     .camada-item {
       display: flex;
       align-items: center;
@@ -125,7 +123,6 @@
       color: rgba(255,255,255,0.9);
     }
 
-    /* Legenda CNFP */
     .legenda-item {
       display: flex;
       align-items: center;
@@ -157,7 +154,7 @@
       flex-shrink: 0;
       opacity: 0.85;
     }
-    
+
     .legenda-label {
       font-size: 10px;
       color: rgba(255,255,255,0.55);
@@ -169,22 +166,6 @@
       font-weight: 600;
     }
 
-    /* Legenda blocos */
-    .bloco-gradiente {
-      height: 8px;
-      border-radius: 4px;
-      background: linear-gradient(to right, #fed7aa, #f97316, #c2410c, #7c2d12);
-      margin-bottom: 6px;
-    }
-
-    .bloco-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 9px;
-      color: rgba(255,255,255,0.35);
-    }
-
-    /* Rodapé */
     #painel-footer {
       margin-top: auto;
       padding: 12px 16px;
@@ -194,7 +175,6 @@
       line-height: 1.6;
     }
 
-    /* Tooltip de município */
     .municipio-tooltip {
       background: rgba(10,14,20,0.9);
       border: 1px solid rgba(255,255,255,0.1);
@@ -205,7 +185,6 @@
       font-family: 'Segoe UI', system-ui, sans-serif;
     }
 
-    /* Popup */
     .leaflet-popup-content-wrapper {
       background: rgba(10,14,20,0.95);
       border: 1px solid rgba(255,255,255,0.1);
@@ -218,7 +197,24 @@
       background: rgba(10,14,20,0.95);
     }
 
-    /* Mobile */
+    /* ✅ NOVO: aviso visual de erro de carregamento */
+    #erro-carregamento {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(180, 0, 0, 0.85);
+      color: #fff;
+      padding: 16px 20px;
+      border-radius: 8px;
+      z-index: 9999;
+      font-size: 13px;
+      text-align: center;
+      max-width: 300px;
+      line-height: 1.6;
+    }
+
     #btn-painel-mobile {
       display: none;
       position: absolute;
@@ -254,6 +250,12 @@
 <body>
 
 <div id="mapa"></div>
+
+<!-- ✅ NOVO: div de erro visível ao usuário -->
+<div id="erro-carregamento">
+  ⚠️ Erro ao carregar os dados.<br>
+  Verifique o console para detalhes.
+</div>
 
 <button id="btn-painel-mobile" onclick="document.getElementById('painel').classList.toggle('aberto')">
   Camadas
@@ -296,12 +298,12 @@
     <label class="camada-item" data-camada="sicar">
       <input type="checkbox">
       <div class="camada-toggle"></div>
-      <span class="camada-nome">Imóveis SICAR </span>
+      <span class="camada-nome">Imóveis SICAR</span>
     </label>
   </div>
 
   <div class="secao">
-    <div class="secao-titulo">Florestas Públicas (CNFP) </div>
+    <div class="secao-titulo">Florestas Públicas (CNFP)</div>
     <div id="legenda-cnfp"></div>
   </div>
 
@@ -324,8 +326,8 @@
     </div>
 
     <div class="legenda-item">
-       <div class="legenda-ponto-vazado" style="border-color:#6ee7b7"></div>
-       <span class="legenda-label">Disponível 2</span>
+      <div class="legenda-ponto-vazado" style="border-color:#6ee7b7"></div>
+      <span class="legenda-label">Disponível 2</span>
     </div>
 
     <div style="font-size:9px;color:rgba(255,255,255,0.25);margin-top:8px;line-height:1.5">
@@ -368,285 +370,283 @@
 </div>
 
 <script>
-  const map = L.map("mapa", {
-    scrollWheelZoom: true,
-    preferCanvas: true,
-    center: [-4.5, -60],
-    zoom: 7,
-    zoomControl: true
-  })
+  // ✅ CORREÇÃO: window.addEventListener garante que o Leaflet carregou antes de executar
+  window.addEventListener('load', function () {
 
-  // Move zoom control para não conflitar com painel
-  map.zoomControl.setPosition('topleft')
-
-  L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-    {
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
-      subdomains: "abcd",
-      maxZoom: 20
-    }
-  ).addTo(map)
-
-  // ── Utilitários ─────────────────────────────────────
-  function prop(props, ...keys) {
-    for (const k of keys) {
-      const found = Object.keys(props).find(p => p.toLowerCase() === k.toLowerCase())
-      if (found && props[found]) return props[found]
-    }
-    return null
-  }
-
-  function popupHTML(titulo, campos) {
-    const linhas = campos
-      .filter(([_, v]) => v)
-      .map(([label, v]) => `
-        <tr>
-          <td style="color:rgba(255,255,255,0.4);padding:3px 12px 3px 0;white-space:nowrap;font-size:11px">${label}</td>
-          <td style="font-weight:600;color:#fff;font-size:11px">${v}</td>
-        </tr>`).join("")
-    return `
-      <div style="font-family:'Segoe UI',system-ui,sans-serif;min-width:180px;padding:4px 2px">
-        <div style="font-size:12px;font-weight:700;margin-bottom:8px;
-          color:#fff;letter-spacing:0.3px">${titulo}</div>
-        <table>${linhas}</table>
-      </div>`
-  }
-
-  const renderer = L.canvas()
-
-  // ── Paleta CNFP ─────────────────────────────────────
-  const coresCNFP = {
-    "SEM DESTINACAO":    { color: "#d4a000", fill: "#FFD700", opacity: 0.72 },
-    "USO SUSTENTAVEL":   { color: "#0891b2", fill: "#22d3ee", opacity: 0.55 },
-    "PROTECAO INTEGRAL": { color: "#7c3aed", fill: "#a78bfa", opacity: 0.55 },
-    "USO MILITAR":       { color: "#dc2626", fill: "#f87171", opacity: 0.55 }
-  }
-
-  // Legenda CNFP no painel
-  const legendaCNFP = document.getElementById("legenda-cnfp")
-  Object.entries(coresCNFP).forEach(([cat, cor]) => {
-    legendaCNFP.innerHTML += `
-      <div class="legenda-item">
-        <div class="legenda-cor" style="background:${cor.fill};opacity:0.85"></div>
-        <span class="legenda-label${cat === 'SEM DESTINACAO' ? ' destaque' : ''}">${cat}</span>
-      </div>`
-  })
-
-  // ── Paleta blocos de voo (gradiente por id 1–4) ─────
-  const coresBlocos = {
-  1: { color: "#ff8a3d" },
-  2: { color: "#ffb86b" },
-  3: { color: "#ff5c5c" },
-  4: { color: "#ffffff" }
-  }
-
-  // ── Paleta MapBiomas (coadjuvantes, sem interação) ──
-  const coresMapBiomas = {
-    disponivel1: { color: "#34d399", opacity: 0.5 },
-    ctanec:      { color: "#60a5fa", opacity: 0.5 },
-    ctanec2:     { color: "#818cf8", opacity: 0.5 },
-    disponivel2: { color: "#6ee7b7", opacity: 0.5 }
-  }
-
-  // ── Registro de camadas para os toggles ─────────────
-  const camadas = {}
-
-  function registrar(key, layer) {
-    camadas[key] = layer
-  }
-
-  // ── Toggle do painel ─────────────────────────────────
-  document.querySelectorAll(".camada-item").forEach(item => {
-    item.addEventListener("click", () => {
-      const key = item.dataset.camada
-      const cb = item.querySelector("input")
-      cb.checked = !cb.checked
-      item.classList.toggle("ativo", cb.checked)
-      const layer = camadas[key]
-      if (!layer) return
-      if (cb.checked) map.addLayer(layer)
-      else map.removeLayer(layer)
+    // ✅ CORREÇÃO: preferCanvas removido — renderer Canvas usado explicitamente onde necessário
+    const map = L.map("mapa", {
+      scrollWheelZoom: true,
+      center: [-4.5, -60],
+      zoom: 7,
+      zoomControl: true
     })
-  })
 
-  // ── Carrega todos os GeoJSONs ────────────────────────
-  Promise.all([
-    fetch("lim_estados_amazon_legal.geojson").then(r => r.json()),
-    fetch("lim_municipios_AR.geojson").then(r => r.json()),
-    fetch("CNFP_2024_AR.geojson").then(r => r.json()),
-    fetch("plano-voo-blocos_1a4_AR.geojson").then(r => r.json()),
-    fetch("Perimetro_imoveis_SICAR_AR.geojson").then(r => r.json()),
-    fetch("plano-voo-mapbiomas-disponivel1.geojson").then(r => r.json()),
-    fetch("plano-voo-mapbiomas-necessidadeCTA.geojson").then(r => r.json()),
-    fetch("plano-voo-mapbiomas-necessidadeCTA2.geojson").then(r => r.json()),
-    fetch("plano-voo-mapbiomas-disponivel2.geojson").then(r => r.json()),
-  ]).then(([estados, municipios, cnfp, planoVoo, sicar,
-            disp1, ctanec, ctanec2, disp2]) => {
+    map.zoomControl.setPosition('topleft')
 
-    // 1. Estados
-    registrar("estados", L.geoJSON(estados, {
-      style: { color: "#ffffff", weight: 1.2, fillOpacity: 0, dashArray: "4,4" }
-    }).addTo(map))
+    L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        subdomains: "abcd",
+        maxZoom: 20
+      }
+    ).addTo(map)
 
-    // 2. Municípios — interativo com tooltip e popup
-    registrar("municipios", L.geoJSON(municipios, {
-      style: {
-        color: "rgba(255,255,255,0.25)",
-        weight: 0.8,
-        fillOpacity: 0,
-        fillColor: "transparent"
-      },
-      onEachFeature(feature, layer) {
-        const p = feature.properties || {}
-        const nome = prop(p, "nome", "name", "municipio", "NM_MUN") || "Município"
-        const uf   = prop(p, "uf", "UF", "SIGLA_UF") || ""
+    // ── Utilitários ───────────────────────────────────────
+    function prop(props, ...keys) {
+      for (const k of keys) {
+        const found = Object.keys(props).find(p => p.toLowerCase() === k.toLowerCase())
+        if (found && props[found]) return props[found]
+      }
+      return null
+    }
 
-        layer.bindTooltip(nome, {
-          permanent: false,
-          className: "municipio-tooltip",
-          direction: "center"
-        })
+    function popupHTML(titulo, campos) {
+      const linhas = campos
+        .filter(([_, v]) => v)
+        .map(([label, v]) => `
+          <tr>
+            <td style="color:rgba(255,255,255,0.4);padding:3px 12px 3px 0;white-space:nowrap;font-size:11px">${label}</td>
+            <td style="font-weight:600;color:#fff;font-size:11px">${v}</td>
+          </tr>`).join("")
+      return `
+        <div style="font-family:'Segoe UI',system-ui,sans-serif;min-width:180px;padding:4px 2px">
+          <div style="font-size:12px;font-weight:700;margin-bottom:8px;
+            color:#fff;letter-spacing:0.3px">${titulo}</div>
+          <table>${linhas}</table>
+        </div>`
+    }
 
-        layer.bindPopup(popupHTML("Município", [
-          ["Nome", nome],
-          ["UF",   uf]
-        ]))
+    // renderer Canvas explícito — usado apenas no CNFP e SICAR
+    const renderer = L.canvas()
 
-        layer.on("mouseover", () => layer.setStyle({
-          fillColor: "#ffffff",
-          fillOpacity: 0.05,
-          color: "rgba(255,255,255,0.5)",
-          weight: 1.2
-        }))
-        layer.on("mouseout", () => layer.setStyle({
+    // ── Paleta CNFP ───────────────────────────────────────
+    const coresCNFP = {
+      "SEM DESTINACAO":    { color: "#d4a000", fill: "#FFD700", opacity: 0.72 },
+      "USO SUSTENTAVEL":   { color: "#0891b2", fill: "#22d3ee", opacity: 0.55 },
+      "PROTECAO INTEGRAL": { color: "#7c3aed", fill: "#a78bfa", opacity: 0.55 },
+      "USO MILITAR":       { color: "#dc2626", fill: "#f87171", opacity: 0.55 }
+    }
+
+    const legendaCNFP = document.getElementById("legenda-cnfp")
+    Object.entries(coresCNFP).forEach(([cat, cor]) => {
+      legendaCNFP.innerHTML += `
+        <div class="legenda-item">
+          <div class="legenda-cor" style="background:${cor.fill};opacity:0.85"></div>
+          <span class="legenda-label${cat === 'SEM DESTINACAO' ? ' destaque' : ''}">${cat}</span>
+        </div>`
+    })
+
+    // ── Paleta blocos de voo (cor sólida por bloco 1–4) ───
+    const coresBlocos = {
+      1: { color: "#ff8a3d" },
+      2: { color: "#ffb86b" },
+      3: { color: "#ff5c5c" },
+      4: { color: "#ffffff" }
+    }
+
+    // ── Paleta MapBiomas ──────────────────────────────────
+    const coresMapBiomas = {
+      disponivel1: { color: "#34d399", opacity: 0.5 },
+      ctanec:      { color: "#60a5fa", opacity: 0.5 },
+      ctanec2:     { color: "#818cf8", opacity: 0.5 },
+      disponivel2: { color: "#6ee7b7", opacity: 0.5 }
+    }
+
+    // ── Registro de camadas para os toggles ───────────────
+    const camadas = {}
+
+    function registrar(key, layer) {
+      camadas[key] = layer
+    }
+
+    // ── Toggle do painel ──────────────────────────────────
+    document.querySelectorAll(".camada-item").forEach(item => {
+      item.addEventListener("click", () => {
+        const key = item.dataset.camada
+        const cb = item.querySelector("input")
+        cb.checked = !cb.checked
+        item.classList.toggle("ativo", cb.checked)
+        const layer = camadas[key]
+        if (!layer) return
+        if (cb.checked) map.addLayer(layer)
+        else map.removeLayer(layer)
+      })
+    })
+
+    // ── Carrega todos os GeoJSONs ─────────────────────────
+    Promise.all([
+      fetch("lim_estados_amazon_legal.geojson").then(r => r.json()),
+      fetch("lim_municipios_AR.geojson").then(r => r.json()),
+      fetch("CNFP_2024_AR.geojson").then(r => r.json()),
+      fetch("plano-voo-blocos_1a4_AR.geojson").then(r => r.json()),
+      fetch("Perimetro_imoveis_SICAR_AR.geojson").then(r => r.json()),
+      fetch("plano-voo-mapbiomas-disponivel1.geojson").then(r => r.json()),
+      fetch("plano-voo-mapbiomas-necessidadeCTA.geojson").then(r => r.json()),
+      fetch("plano-voo-mapbiomas-necessidadeCTA2.geojson").then(r => r.json()),
+      fetch("plano-voo-mapbiomas-disponivel2.geojson").then(r => r.json()),
+    ]).then(([estados, municipios, cnfp, planoVoo, sicar,
+              disp1, ctanec, ctanec2, disp2]) => {
+
+      // 1. Estados
+      registrar("estados", L.geoJSON(estados, {
+        style: { color: "#ffffff", weight: 1.2, fillOpacity: 0, dashArray: "4,4" }
+      }).addTo(map))
+
+      // 2. Municípios — interativo com tooltip e popup
+      registrar("municipios", L.geoJSON(municipios, {
+        style: {
           color: "rgba(255,255,255,0.25)",
           weight: 0.8,
-          fillOpacity: 0
-        }))
-      }
-    }).addTo(map))
-
-    // 3. CNFP
-    registrar("cnfp", L.geoJSON(cnfp, {
-      renderer,
-      style(feature) {
-        const cat = (feature.properties?.protecao || "").toUpperCase().trim()
-        const cor = coresCNFP[cat] || { color: "#666", fill: "#888", opacity: 0.35 }
-        return { color: cor.color, weight: 1, fillColor: cor.fill, fillOpacity: cor.opacity }
-      },
-      onEachFeature(feature, layer) {
-        const p = feature.properties || {}
-        layer.bindPopup(popupHTML("CNFP 2024", [
-          ["Nome",     prop(p, "nome", "name")],
-          ["Proteção", prop(p, "protecao")],
-          ["Tipo",     prop(p, "tipo", "type")]
-        ]))
-      }
-    }).addTo(map))
-
-    // 4. Plano de voo — colorido por id
-    // 4. Plano de voo — borda colorida por ID, preenchimento transparente
-    registrar("planovoo", L.geoJSON(planoVoo, {
-      style(feature) {
-        const p = feature.properties || {}
-        const id = parseInt(prop(p, "id", "ID")) || 1
-        const cor = coresBlocos[id] || coresBlocos[1]
-
-        return {
-          color: cor.color,
-          weight: 1.6,
-          opacity: 0.9,
-          fillColor: "transparent",
-          fillOpacity: 0
-        }
-      },
-      onEachFeature(feature, layer) {
-        const p = feature.properties || {}
-        const id = prop(p, "id", "ID") || "—"
-        const cor = coresBlocos[parseInt(id)] || coresBlocos[1]
-
-        layer.bindPopup(popupHTML("Plano de Voo", [
-          ["Bloco", `${id}`],
-          ["Nome", prop(p, "name", "nome", "Name")],
-          ["Descrição", prop(p, "description", "descricao")]
-        ]))
-
-        layer.on("mouseover", () => layer.setStyle({
-          color: "#ffffff",
-          weight: 2.4,
-          fillColor: cor.color,
-          fillOpacity: 0.06
-        }))
-
-        layer.on("mouseout", () => layer.setStyle({
-          color: cor.color,
-          weight: 1.6,
-          opacity: 0.9,
-          fillColor: "transparent",
-          fillOpacity: 0
-        }))
-      }
-    }).addTo(map))
-
-    // 5. SICAR — desativado por padrão
-    registrar("sicar", L.geoJSON(sicar, {
-      renderer,
-      style: { color: "rgba(255,255,255,0.3)", weight: 0.6, fillColor: "#fff", fillOpacity: 0.04 },
-      onEachFeature(feature, layer) {
-        const p = feature.properties || {}
-        layer.bindPopup(popupHTML("Imóvel SICAR", [
-          ["CAR",       prop(p, "cod_imovel")],
-          ["Município", prop(p, "municipio")],
-          ["UF",        prop(p, "uf")]
-        ]))
-      }
-    }))
-    // SICAR começa desativado — remove do mapa e reflete no painel
-    document.querySelector('[data-camada="sicar"] input').checked = false
-    document.querySelector('[data-camada="sicar"]').classList.remove("ativo")
-
-    // 6–9. MapBiomas — pontos e linhas, sem interação
-    function estiloPonto(cor) {
-      return {
-        pointToLayer(feature, latlng) {
-          return L.circleMarker(latlng, {
-            radius: 4,
-            color: cor.color,
-            fillColor: cor.color,
-            fillOpacity: cor.opacity,
-            weight: 1,
-            opacity: cor.opacity
-          })
+          fillOpacity: 0,
+          fillColor: "transparent"
         },
-        style: { color: cor.color, weight: 1, opacity: cor.opacity, fillOpacity: 0 }
+        onEachFeature(feature, layer) {
+          const p = feature.properties || {}
+          const nome = prop(p, "nome", "name", "municipio", "NM_MUN") || "Município"
+          const uf   = prop(p, "uf", "UF", "SIGLA_UF") || ""
+
+          layer.bindTooltip(nome, {
+            permanent: false,
+            className: "municipio-tooltip",
+            direction: "center"
+          })
+
+          layer.bindPopup(popupHTML("Município", [
+            ["Nome", nome],
+            ["UF",   uf]
+          ]))
+
+          layer.on("mouseover", () => layer.setStyle({
+            fillColor: "#ffffff",
+            fillOpacity: 0.05,
+            color: "rgba(255,255,255,0.5)",
+            weight: 1.2
+          }))
+          layer.on("mouseout", () => layer.setStyle({
+            color: "rgba(255,255,255,0.25)",
+            weight: 0.8,
+            fillOpacity: 0
+          }))
+        }
+      }).addTo(map))
+
+      // 3. CNFP
+      registrar("cnfp", L.geoJSON(cnfp, {
+        renderer,
+        style(feature) {
+          const cat = (feature.properties?.protecao || "").toUpperCase().trim()
+          const cor = coresCNFP[cat] || { color: "#666", fill: "#888", opacity: 0.35 }
+          return { color: cor.color, weight: 1, fillColor: cor.fill, fillOpacity: cor.opacity }
+        },
+        onEachFeature(feature, layer) {
+          const p = feature.properties || {}
+          layer.bindPopup(popupHTML("CNFP 2024", [
+            ["Nome",     prop(p, "nome", "name")],
+            ["Proteção", prop(p, "protecao")],
+            ["Tipo",     prop(p, "tipo", "type")]
+          ]))
+        }
+      }).addTo(map))
+
+      // 4. Plano de voo — borda colorida por bloco, preenchimento transparente
+      registrar("planovoo", L.geoJSON(planoVoo, {
+        style(feature) {
+          const p = feature.properties || {}
+          const id = parseInt(prop(p, "id", "ID")) || 1
+          const cor = coresBlocos[id] || coresBlocos[1]
+          return {
+            color: cor.color,
+            weight: 1.6,
+            opacity: 0.9,
+            fillColor: "transparent",
+            fillOpacity: 0
+          }
+        },
+        onEachFeature(feature, layer) {
+          const p = feature.properties || {}
+          const id = prop(p, "id", "ID") || "—"
+          const cor = coresBlocos[parseInt(id)] || coresBlocos[1]
+
+          layer.bindPopup(popupHTML("Plano de Voo", [
+            ["Bloco",     `${id}`],
+            ["Nome",      prop(p, "name", "nome", "Name")],
+            ["Descrição", prop(p, "description", "descricao")]
+          ]))
+
+          layer.on("mouseover", () => layer.setStyle({
+            color: "#ffffff",
+            weight: 2.4,
+            fillColor: cor.color,
+            fillOpacity: 0.06
+          }))
+          layer.on("mouseout", () => layer.setStyle({
+            color: cor.color,
+            weight: 1.6,
+            opacity: 0.9,
+            fillColor: "transparent",
+            fillOpacity: 0
+          }))
+        }
+      }).addTo(map))
+
+      // 5. SICAR — desativado por padrão
+      registrar("sicar", L.geoJSON(sicar, {
+        renderer,
+        style: { color: "rgba(255,255,255,0.3)", weight: 0.6, fillColor: "#fff", fillOpacity: 0.04 },
+        onEachFeature(feature, layer) {
+          const p = feature.properties || {}
+          layer.bindPopup(popupHTML("Imóvel SICAR", [
+            ["CAR",       prop(p, "cod_imovel")],
+            ["Município", prop(p, "municipio")],
+            ["UF",        prop(p, "uf")]
+          ]))
+        }
+      }))
+      document.querySelector('[data-camada="sicar"] input').checked = false
+      document.querySelector('[data-camada="sicar"]').classList.remove("ativo")
+
+      // 6–9. MapBiomas — sem toggle, apenas visuais de referência
+      // ✅ CORREÇÃO: .addTo(map) adicionado, const e registrar removidos
+      function estiloPonto(cor) {
+        return {
+          pointToLayer(feature, latlng) {
+            return L.circleMarker(latlng, {
+              radius: 4,
+              color: cor.color,
+              fillColor: cor.color,
+              fillOpacity: cor.opacity,
+              weight: 1,
+              opacity: cor.opacity
+            })
+          },
+          style: { color: cor.color, weight: 1, opacity: cor.opacity, fillOpacity: 0 }
+        }
       }
-    }
 
-    const layerDisp1  = L.geoJSON(disp1,   estiloPonto(coresMapBiomas.disponivel1))
-    const layerCTA    = L.geoJSON(ctanec,  estiloPonto(coresMapBiomas.ctanec))
-    const layerCTA2   = L.geoJSON(ctanec2, estiloPonto(coresMapBiomas.ctanec2))
-    const layerDisp2  = L.geoJSON(disp2,   estiloPonto(coresMapBiomas.disponivel2))
+      L.geoJSON(disp1,   estiloPonto(coresMapBiomas.disponivel1)).addTo(map)
+      L.geoJSON(ctanec,  estiloPonto(coresMapBiomas.ctanec)).addTo(map)
+      L.geoJSON(ctanec2, estiloPonto(coresMapBiomas.ctanec2)).addTo(map)
+      L.geoJSON(disp2,   estiloPonto(coresMapBiomas.disponivel2)).addTo(map)
 
-    registrar("disponivel1", layerDisp1)
-    registrar("ctanec",      layerCTA)
-    registrar("ctanec2",     layerCTA2)
-    registrar("disponivel2", layerDisp2)
+      // Escala
+      L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map)
 
-    // Escala
-    L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map)
+      // Zoom inicial nos blocos de voo
+      try {
+        const bounds = camadas["planovoo"].getBounds()
+        if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 280] })
+      } catch(e) {
+        map.setView([-4.5, -60], 7)
+      }
 
-    // Zoom inicial nos blocos de voo
-    try {
-      const bounds = camadas["planovoo"].getBounds()
-      if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 280] })
-    } catch(e) {
-      map.setView([-4.5, -60], 7)
-    }
+    // ✅ CORREÇÃO: erro exibido visualmente para o usuário
+    }).catch(err => {
+      console.error("Erro ao carregar GeoJSON:", err)
+      document.getElementById("erro-carregamento").style.display = "block"
+    })
 
-  }).catch(err => {
-    console.error("Erro ao carregar GeoJSON:", err)
-  })
+  }) // fecha window.addEventListener
 </script>
 </body>
 </html>
