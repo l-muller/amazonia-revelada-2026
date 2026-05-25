@@ -309,17 +309,17 @@
       <span class="legenda-label">Necessidade CTA</span>
     </div>
     <div class="legenda-item">
-      <div class="legenda-ponto-vazado" style="border-color:#818cf8"></div>
-      <span class="legenda-label">Necessidade CTA 2</span>
-    </div>
-    <div class="legenda-item">
       <div class="legenda-ponto-vazado" style="border-color:#6ee7b7"></div>
       <span class="legenda-label">Disponível 2</span>
+    </div>
+    <div class="legenda-item">
+      <div class="legenda-ponto-vazado" style="border-color:#818cf8"></div>
+      <span class="legenda-label">Necessidade CTA 2</span>
     </div>
   </div>
 
   <div id="painel-footer">
-    Dados: CNFP, SICAR, MapBiomas<br>
+    Dados: SFB-CNFP, SICAR<br>
     Cartografia: Amazônia Revelada · 2026
   </div>
 </div>
@@ -444,22 +444,17 @@ map.getPane('pane-planovoo').style.pointerEvents = 'none'
       style: { color: "#ffffff", weight: 1.2, fillOpacity: 0, dashArray: "4,4" }
     }).addTo(map))
 
-    // 2. Municípios — só linha + tooltip, camada auxiliar
-    registrar("municipios", L.geoJSON(municipios, {
-      pane: 'pane-municipios',
-      style: { color: "rgba(255,255,255,0.22)", weight: 0.7, fillOpacity: 0, fillColor: "transparent" },
-      onEachFeature(feature, layer) {
-        const p    = feature.properties || {}
-        const nome = prop(p, "nome", "name", "municipio", "NM_MUN") || "Município"
-        layer.bindTooltip(nome, {
-          permanent: false,
-          className: "municipio-tooltip",
-          direction: "center",
-          opacity: 0.9,
-          sticky: true
-        })
-      }
-    }).addTo(map))
+    // 2. Municípios — borda discreta, sem interação e sem tooltip seguindo o mouse
+registrar("municipios", L.geoJSON(municipios, {
+  pane: 'pane-municipios',
+  interactive: false,
+  style: {
+    color: "rgba(125, 211, 252, 0.20)",
+    weight: 0.55,
+    fillOpacity: 0,
+    fillColor: "transparent"
+  }
+}).addTo(map))
 
     // 3. CNFP — principal, clicável
     registrar("cnfp", L.geoJSON(cnfp, {
@@ -479,20 +474,22 @@ map.getPane('pane-planovoo').style.pointerEvents = 'none'
       }
     }).addTo(map))
 
-    // 4. Plano de voo — pane com pointerEvents:none
-    registrar("planovoo", L.geoJSON(planoVoo, {
+    // 4. Plano de voo — apenas contorno, sem preenchimento e sem capturar cliques
+registrar("planovoo", L.geoJSON(planoVoo, {
   pane: 'pane-planovoo',
   interactive: false,
+  bubblingMouseEvents: false,
   style(feature) {
     const id  = parseInt(prop(feature.properties || {}, "id", "ID")) || 1
     const cor = coresBlocos[id] || coresBlocos[1]
 
     return {
       color: cor,
-      weight: 1.4,
-      opacity: 0.9,
-      fillColor: cor,
-      fillOpacity: 0.025
+      weight: 1.3,
+      opacity: 0.95,
+      fill: false,
+      fillColor: "transparent",
+      fillOpacity: 0
     }
   }
 }).addTo(map))
