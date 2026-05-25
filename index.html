@@ -108,6 +108,12 @@
     .camada-item.ativo .camada-toggle { background: rgba(99,179,237,0.4); }
     .camada-item.ativo .camada-toggle::after { background: #63b3ed; left: 15px; }
 
+    .camada-item.desabilitado {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
     .camada-nome {
       font-size: 11px;
       color: rgba(255,255,255,0.65);
@@ -177,6 +183,33 @@
 
     .leaflet-popup-tip { background: rgba(10,14,20,0.95) !important; }
 
+    #spinner {
+      position: absolute;
+      top: 50%;
+      left: calc(50% - 120px);
+      transform: translate(-50%, -50%);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255,255,255,0.6);
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    #spinner-circulo {
+      width: 28px;
+      height: 28px;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-top-color: #63b3ed;
+      border-radius: 50%;
+      animation: giro 0.8s linear infinite;
+    }
+
+    @keyframes giro { to { transform: rotate(360deg); } }
+
     #erro-carregamento {
       display: none;
       position: absolute;
@@ -222,12 +255,19 @@
       }
       #painel.aberto { display: flex; }
       #btn-painel-mobile { display: block; }
+      #spinner { left: 50%; }
     }
   </style>
 </head>
 <body>
 
 <div id="mapa"></div>
+
+<div id="spinner">
+  <div id="spinner-circulo"></div>
+  Carregando dados…
+</div>
+
 <div id="erro-carregamento">⚠️ Erro ao carregar os dados.<br>Verifique o console para detalhes.</div>
 <button id="btn-painel-mobile" onclick="document.getElementById('painel').classList.toggle('aberto')">Camadas</button>
 
@@ -253,7 +293,7 @@
       <span class="camada-nome">CNFP 2024</span>
     </label>
 
-    <label class="camada-item" data-camada="sicar">
+    <label class="camada-item desabilitado" data-camada="sicar" id="toggle-sicar">
       <input type="checkbox">
       <div class="camada-toggle"></div>
       <span class="camada-nome">Imóveis SICAR — lento</span>
@@ -323,6 +363,7 @@ window.addEventListener('load', function () {
   ).addTo(map)
 
   function prop(props, ...keys) {
+    if (!props || typeof props !== 'object') return null
     for (const k of keys) {
       const found = Object.keys(props).find(p => p.toLowerCase() === k.toLowerCase())
       if (found && props[found]) return props[found]
@@ -357,8 +398,8 @@ window.addEventListener('load', function () {
   const coresMapBiomas = {
     disponivel1: { color: "#34d399", opacity: 0.55 },
     ctanec:      { color: "#60a5fa", opacity: 0.55 },
-    disponivel2: { color: "#6ee7b7", opacity: 0.55 },
-    ctanec2:     { color: "#818cf8", opacity: 0.55 }
+    ctanec2:     { color: "#818cf8", opacity: 0.55 },
+    disponivel2: { color: "#6ee7b7", opacity: 0.55 }
   }
 
   const legendaBlocos = document.getElementById("legenda-blocos")
@@ -380,21 +421,36 @@ window.addEventListener('load', function () {
   })
 
   const camadas = {}
-  const ativas  = new Set(["cnfp","planovoo"])
 
   function registrar(key, layer) { camadas[key] = layer }
 
   function fetchGeo(url) {
-    return fetch(url)
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 30000)
+    return fetch(url, { signal: controller.signal })
       .then(r => {
-        if (!r.ok) throw new Error(`HTTP: ${r.status}`);
-        return r.json();
+        clearTimeout(timer)
+        if (!r.ok) throw new Error(`HTTP ${r.status}: ${url}`)
+        return r.json()
       })
       .catch(err => {
-        console.warn(`Falha isolada: ${url}`, err);
-        return { type: "FeatureCollection", features: [] };
-      });
+        console.warn(`Camada ignorada (falha ao carregar): ${url}`, err)
+        return { type: "FeatureCollection", features: [] }
+      })
   }
+
+  document.querySelectorAll(".camada-item:not(.desabilitado)").forEach(item => {
+    item.addEventListener("click", () => {
+      const key = item.dataset.camada
+      const cb  = item.querySelector("input")
+      cb.checked = !cb.checked
+      item.classList.toggle("ativo", cb.checked)
+      const layer = camadas[key]
+      if (!layer) return
+      if (cb.checked) map.addLayer(layer)
+      else            map.removeLayer(layer)
+    })
+  })
 
   Promise.all([
     fetchGeo("lim_estados_amazon_legal.geojson"),
@@ -409,13 +465,13 @@ window.addEventListener('load', function () {
   ]).then(([estados, municipios, cnfp, planoVoo, sicar,
             disp1, ctanec, ctanec2, disp2]) => {
 
-    // 1. Estados
+    document.getElementById("spinner").style.display = "none"
+
     registrar("estados", L.geoJSON(estados, {
       pane: 'pane-estados',
       style: { color: "#ffffff", weight: 1.2, fillOpacity: 0, dashArray: "4,4" }
     }).addTo(map))
 
-    // 2. Municípios
     registrar("municipios", L.geoJSON(municipios, {
       pane: 'pane-municipios',
       interactive: false,
@@ -427,7 +483,6 @@ window.addEventListener('load', function () {
       }
     }).addTo(map))
 
-    // 3. CNFP
     registrar("cnfp", L.geoJSON(cnfp, {
       pane: 'pane-cnfp',
       style(feature) {
@@ -445,13 +500,13 @@ window.addEventListener('load', function () {
       }
     }).addTo(map))
 
-    // 4. Plano de voo
     registrar("planovoo", L.geoJSON(planoVoo, {
       pane: 'pane-planovoo',
       interactive: false,
       bubblingMouseEvents: false,
       style(feature) {
-        const id  = parseInt(prop(feature.properties || {}, "id", "ID")) || 1
+        const raw = prop(feature.properties || {}, "id", "ID")
+        const id  = Number.isInteger(+raw) && +raw > 0 ? +raw : 1
         const cor = coresBlocos[id] || coresBlocos[1]
         return {
           color: cor,
@@ -464,46 +519,29 @@ window.addEventListener('load', function () {
       }
     }).addTo(map))
 
-    // 5. Controle de interface e Lazy Load do SICAR
-    document.querySelectorAll(".camada-item").forEach(item => {
-      item.addEventListener("click", () => {
-        const key = item.dataset.camada;
-        const cb  = item.querySelector("input");
-        cb.checked = !cb.checked;
-        item.classList.toggle("ativo", cb.checked);
+    registrar("sicar", L.geoJSON(sicar, {
+      pane: 'pane-sicar',
+      style: { color: "rgba(255,255,255,0.35)", weight: 0.7, fillColor: "transparent", fillOpacity: 0 },
+      onEachFeature(feature, layer) {
+        const p = feature.properties || {}
+        layer.bindPopup(popupHTML("Imóvel SICAR", [
+          ["CAR",       prop(p, "cod_imovel")],
+          ["Município", prop(p, "municipio")],
+          ["UF",        prop(p, "uf")]
+        ]))
+      }
+    }))
 
-        if (key === "sicar" && cb.checked && !camadas["sicar"]) {
-          const sicarLayer = L.geoJSON(sicar, {
-            pane: 'pane-sicar',
-            style: { color: "rgba(255,255,255,0.35)", weight: 0.7, fillColor: "transparent", fillOpacity: 0 },
-            onEachFeature(feature, layer) {
-              const p = feature.properties || {};
-              layer.bindPopup(popupHTML("Imóvel SICAR", [
-                ["CAR",       prop(p, "cod_imovel")],
-                ["Município", prop(p, "municipio")],
-                ["UF",        prop(p, "uf")]
-              ]));
-            }
-          }).addTo(map);
-          registrar("sicar", sicarLayer);
-          ativas.add("sicar");
-          return;
-        }
+    const toggleSicar = document.getElementById("toggle-sicar")
+    toggleSicar.classList.remove("desabilitado")
+    toggleSicar.addEventListener("click", () => {
+      const cb = toggleSicar.querySelector("input")
+      cb.checked = !cb.checked
+      toggleSicar.classList.toggle("ativo", cb.checked)
+      if (cb.checked) map.addLayer(camadas["sicar"])
+      else            map.removeLayer(camadas["sicar"])
+    })
 
-        const layer = camadas[key];
-        if (!layer) return;
-
-        if (cb.checked) {
-          map.addLayer(layer);
-          ativas.add(key);
-        } else {
-          map.removeLayer(layer);
-          ativas.delete(key);
-        }
-      });
-    });
-
-    // 6–9. MapBiomas — fixos, sem toggle
     function estiloMapBiomas(cor) {
       return {
         pane: 'pane-mapbiomas',
@@ -539,7 +577,8 @@ window.addEventListener('load', function () {
     }
 
   }).catch(err => {
-    console.error("Erro ao carregar GeoJSON:", err)
+    console.error("Erro crítico ao carregar dados:", err)
+    document.getElementById("spinner").style.display = "none"
     document.getElementById("erro-carregamento").style.display = "block"
   })
 
