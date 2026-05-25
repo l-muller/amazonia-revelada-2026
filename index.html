@@ -8,172 +8,595 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
     html, body, #mapa {
       height: 100%;
       width: 100%;
       overflow: hidden;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    /* ── Painel lateral ── */
+    #painel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 240px;
+      height: 100%;
+      background: rgba(10, 14, 20, 0.92);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid rgba(255,255,255,0.07);
+      overflow-y: auto;
+    }
+
+    #painel-header {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    #painel-header .projeto {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 4px;
+    }
+
+    #painel-header h1 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.4;
+    }
+
+    #painel-header .ano {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 2px;
+    }
+
+    .secao {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .secao-titulo {
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 10px;
+    }
+
+    /* Toggle de camadas */
+    .camada-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .camada-item input[type="checkbox"] {
+      display: none;
+    }
+
+    .camada-toggle {
+      width: 28px;
+      height: 16px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      position: relative;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .camada-toggle::after {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      top: 3px;
+      left: 3px;
+      transition: all 0.2s;
+    }
+
+    .camada-item.ativo .camada-toggle {
+      background: rgba(99, 179, 237, 0.4);
+    }
+
+    .camada-item.ativo .camada-toggle::after {
+      background: #63b3ed;
+      left: 15px;
+    }
+
+    .camada-nome {
+      font-size: 11px;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.3;
+    }
+
+    .camada-item.ativo .camada-nome {
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* Legenda CNFP */
+    .legenda-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .legenda-cor {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .legenda-label {
+      font-size: 10px;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.3px;
+    }
+
+    .legenda-label.destaque {
+      color: rgba(255,255,255,0.85);
+      font-weight: 600;
+    }
+
+    /* Legenda blocos */
+    .bloco-gradiente {
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(to right, #fed7aa, #f97316, #c2410c, #7c2d12);
+      margin-bottom: 6px;
+    }
+
+    .bloco-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* Rodapé */
+    #painel-footer {
+      margin-top: auto;
+      padding: 12px 16px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      font-size: 9px;
+      color: rgba(255,255,255,0.2);
+      line-height: 1.6;
+    }
+
+    /* Tooltip de município */
+    .municipio-tooltip {
+      background: rgba(10,14,20,0.9);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px;
+      color: #fff;
+      font-size: 11px;
+      padding: 4px 8px;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    /* Popup */
+    .leaflet-popup-content-wrapper {
+      background: rgba(10,14,20,0.95);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+
+    .leaflet-popup-tip {
+      background: rgba(10,14,20,0.95);
+    }
+
+    /* Mobile */
+    #btn-painel-mobile {
+      display: none;
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 1100;
+      background: rgba(10,14,20,0.9);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 640px) {
+      #painel {
+        width: 100%;
+        height: auto;
+        max-height: 50%;
+        top: auto;
+        bottom: 0;
+        border-left: none;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        display: none;
+      }
+      #painel.aberto { display: flex; }
+      #btn-painel-mobile { display: block; }
+      #mapa { height: 100%; }
     }
   </style>
 </head>
 <body>
-  <div id="mapa"></div>
 
-  <script>
-    const map = L.map("mapa", {
-      scrollWheelZoom: true,
-      preferCanvas: true,
-      center: [-4.5, -60],
-      zoom: 7
+<div id="mapa"></div>
+
+<button id="btn-painel-mobile" onclick="document.getElementById('painel').classList.toggle('aberto')">
+  Camadas
+</button>
+
+<div id="painel">
+  <div id="painel-header">
+    <div class="projeto">Amazônia Revelada</div>
+    <h1>Plano de Voos<br>LiDAR 2026</h1>
+    <div class="ano">Amazônia Legal</div>
+  </div>
+
+  <div class="secao">
+    <div class="secao-titulo">Camadas</div>
+
+    <label class="camada-item ativo" data-camada="estados">
+      <input type="checkbox" checked>
+      <div class="camada-toggle"></div>
+      <span class="camada-nome">Limite dos Estados</span>
+    </label>
+
+    <label class="camada-item ativo" data-camada="municipios">
+      <input type="checkbox" checked>
+      <div class="camada-toggle"></div>
+      <span class="camada-nome">Municípios</span>
+    </label>
+
+    <label class="camada-item ativo" data-camada="cnfp">
+      <input type="checkbox" checked>
+      <div class="camada-toggle"></div>
+      <span class="camada-nome">CNFP 2024</span>
+    </label>
+
+    <label class="camada-item ativo" data-camada="planovoo">
+      <input type="checkbox" checked>
+      <div class="camada-toggle"></div>
+      <span class="camada-nome">Plano de Voo — Blocos 1 a 4</span>
+    </label>
+
+    <label class="camada-item" data-camada="disponivel1">
+      <input type="checkbox">
+      <div class="camada-toggle"></div>
+      <span class="camada-nome">MapBiomas — Disponível 1</span>
+    </label>
+
+    <label class="camada-item" data-camada="ctanec">
+      <input type="checkbox">
+      <div class="camada-toggle"></div>
+      <span class="camada-nome">MapBiomas — Necessidade CTA</span>
+    </label>
+
+    <label class="camada-item" data-camada="ctanec2">
+      <input type="checkbox">
+      <div class="camada-toggle"></div>
+      <span class="camada-nome">MapBiomas — Necessidade CTA 2</span>
+    </label>
+
+    <label class="camada-item" data-camada="disponivel2">
+      <input type="checkbox">
+      <div class="camada-toggle"></div>
+      <span class="camada-nome">MapBiomas — Disponível 2</span>
+    </label>
+
+    <label class="camada-item" data-camada="sicar">
+      <input type="checkbox">
+      <div class="camada-toggle"></div>
+      <span class="camada-nome">Imóveis SICAR — lento</span>
+    </label>
+  </div>
+
+  <div class="secao">
+    <div class="secao-titulo">CNFP 2024 — Proteção</div>
+    <div id="legenda-cnfp"></div>
+  </div>
+
+  <div class="secao">
+    <div class="secao-titulo">Blocos de Voo</div>
+    <div class="bloco-gradiente"></div>
+    <div class="bloco-labels">
+      <span>Bloco 1</span>
+      <span>Bloco 4</span>
+    </div>
+    <div style="font-size:9px;color:rgba(255,255,255,0.25);margin-top:6px;line-height:1.5">
+      Sequência de sobrevoo.<br>Clique nos blocos para detalhes.
+    </div>
+  </div>
+
+  <div id="painel-footer">
+    Dados: CNFP, SICAR, MapBiomas<br>
+    Cartografia: Amazônia Revelada · 2026
+  </div>
+</div>
+
+<script>
+  const map = L.map("mapa", {
+    scrollWheelZoom: true,
+    preferCanvas: true,
+    center: [-4.5, -60],
+    zoom: 7,
+    zoomControl: true
+  })
+
+  // Move zoom control para não conflitar com painel
+  map.zoomControl.setPosition('topleft')
+
+  L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      subdomains: "abcd",
+      maxZoom: 20
+    }
+  ).addTo(map)
+
+  // ── Utilitários ─────────────────────────────────────
+  function prop(props, ...keys) {
+    for (const k of keys) {
+      const found = Object.keys(props).find(p => p.toLowerCase() === k.toLowerCase())
+      if (found && props[found]) return props[found]
+    }
+    return null
+  }
+
+  function popupHTML(titulo, campos) {
+    const linhas = campos
+      .filter(([_, v]) => v)
+      .map(([label, v]) => `
+        <tr>
+          <td style="color:rgba(255,255,255,0.4);padding:3px 12px 3px 0;white-space:nowrap;font-size:11px">${label}</td>
+          <td style="font-weight:600;color:#fff;font-size:11px">${v}</td>
+        </tr>`).join("")
+    return `
+      <div style="font-family:'Segoe UI',system-ui,sans-serif;min-width:180px;padding:4px 2px">
+        <div style="font-size:12px;font-weight:700;margin-bottom:8px;
+          color:#fff;letter-spacing:0.3px">${titulo}</div>
+        <table>${linhas}</table>
+      </div>`
+  }
+
+  const renderer = L.canvas()
+
+  // ── Paleta CNFP ─────────────────────────────────────
+  const coresCNFP = {
+    "SEM DESTINACAO":    { color: "#d4a000", fill: "#FFD700", opacity: 0.72 },
+    "USO SUSTENTAVEL":   { color: "#0891b2", fill: "#22d3ee", opacity: 0.55 },
+    "PROTECAO INTEGRAL": { color: "#7c3aed", fill: "#a78bfa", opacity: 0.55 },
+    "USO MILITAR":       { color: "#dc2626", fill: "#f87171", opacity: 0.55 }
+  }
+
+  // Legenda CNFP no painel
+  const legendaCNFP = document.getElementById("legenda-cnfp")
+  Object.entries(coresCNFP).forEach(([cat, cor]) => {
+    legendaCNFP.innerHTML += `
+      <div class="legenda-item">
+        <div class="legenda-cor" style="background:${cor.fill};opacity:0.85"></div>
+        <span class="legenda-label${cat === 'SEM DESTINACAO' ? ' destaque' : ''}">${cat}</span>
+      </div>`
+  })
+
+  // ── Paleta blocos de voo (gradiente por id 1–4) ─────
+  const coresBlocos = {
+    1: { color: "#fed7aa", fill: "#fed7aa", opacity: 0.25 },
+    2: { color: "#f97316", fill: "#f97316", opacity: 0.30 },
+    3: { color: "#c2410c", fill: "#c2410c", opacity: 0.38 },
+    4: { color: "#7c2d12", fill: "#7c2d12", opacity: 0.48 }
+  }
+
+  // ── Paleta MapBiomas (coadjuvantes, sem interação) ──
+  const coresMapBiomas = {
+    disponivel1: { color: "#34d399", opacity: 0.5 },
+    ctanec:      { color: "#60a5fa", opacity: 0.5 },
+    ctanec2:     { color: "#818cf8", opacity: 0.5 },
+    disponivel2: { color: "#6ee7b7", opacity: 0.5 }
+  }
+
+  // ── Registro de camadas para os toggles ─────────────
+  const camadas = {}
+
+  function registrar(key, layer) {
+    camadas[key] = layer
+  }
+
+  // ── Toggle do painel ─────────────────────────────────
+  document.querySelectorAll(".camada-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const key = item.dataset.camada
+      const cb = item.querySelector("input")
+      cb.checked = !cb.checked
+      item.classList.toggle("ativo", cb.checked)
+      const layer = camadas[key]
+      if (!layer) return
+      if (cb.checked) map.addLayer(layer)
+      else map.removeLayer(layer)
     })
+  })
 
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-      {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-        subdomains: "abcd",
-        maxZoom: 20
+  // ── Carrega todos os GeoJSONs ────────────────────────
+  Promise.all([
+    fetch("lim_estados_amazon_legal.geojson").then(r => r.json()),
+    fetch("lim_municipios_AR.geojson").then(r => r.json()),
+    fetch("CNFP_2024_AR.geojson").then(r => r.json()),
+    fetch("plano-voo-blocos_1a4_AR.geojson").then(r => r.json()),
+    fetch("Perimetro_imoveis_SICAR_AR.geojson").then(r => r.json()),
+    fetch("plano-voo-mapbiomas-disponivel1.geojson").then(r => r.json()),
+    fetch("plano-voo-mapbiomas-necessidadeCTA.geojson").then(r => r.json()),
+    fetch("plano-voo-mapbiomas-necessidadeCTA2.geojson").then(r => r.json()),
+    fetch("plano-voo-mapbiomas-disponivel2.geojson").then(r => r.json()),
+  ]).then(([estados, municipios, cnfp, planoVoo, sicar,
+            disp1, ctanec, ctanec2, disp2]) => {
+
+    // 1. Estados
+    registrar("estados", L.geoJSON(estados, {
+      style: { color: "#ffffff", weight: 1.2, fillOpacity: 0, dashArray: "4,4" }
+    }).addTo(map))
+
+    // 2. Municípios — interativo com tooltip e popup
+    registrar("municipios", L.geoJSON(municipios, {
+      style: {
+        color: "rgba(255,255,255,0.25)",
+        weight: 0.8,
+        fillOpacity: 0,
+        fillColor: "transparent"
+      },
+      onEachFeature(feature, layer) {
+        const p = feature.properties || {}
+        const nome = prop(p, "nome", "name", "municipio", "NM_MUN") || "Município"
+        const uf   = prop(p, "uf", "UF", "SIGLA_UF") || ""
+
+        layer.bindTooltip(nome, {
+          permanent: false,
+          className: "municipio-tooltip",
+          direction: "center"
+        })
+
+        layer.bindPopup(popupHTML("Município", [
+          ["Nome", nome],
+          ["UF",   uf]
+        ]))
+
+        layer.on("mouseover", () => layer.setStyle({
+          fillColor: "#ffffff",
+          fillOpacity: 0.05,
+          color: "rgba(255,255,255,0.5)",
+          weight: 1.2
+        }))
+        layer.on("mouseout", () => layer.setStyle({
+          color: "rgba(255,255,255,0.25)",
+          weight: 0.8,
+          fillOpacity: 0
+        }))
       }
-    ).addTo(map)
+    }).addTo(map))
 
-    // ── Utilitários ─────────────────────────────────────
-    function prop(props, ...keys) {
-      for (const k of keys) {
-        const found = Object.keys(props).find(p => p.toLowerCase() === k.toLowerCase())
-        if (found && props[found]) return props[found]
+    // 3. CNFP
+    registrar("cnfp", L.geoJSON(cnfp, {
+      renderer,
+      style(feature) {
+        const cat = (feature.properties?.protecao || "").toUpperCase().trim()
+        const cor = coresCNFP[cat] || { color: "#666", fill: "#888", opacity: 0.35 }
+        return { color: cor.color, weight: 1, fillColor: cor.fill, fillOpacity: cor.opacity }
+      },
+      onEachFeature(feature, layer) {
+        const p = feature.properties || {}
+        layer.bindPopup(popupHTML("CNFP 2024", [
+          ["Nome",     prop(p, "nome", "name")],
+          ["Proteção", prop(p, "protecao")],
+          ["Tipo",     prop(p, "tipo", "type")]
+        ]))
       }
-      return null
-    }
+    }).addTo(map))
 
-    function popupHTML(titulo, campos) {
-      const linhas = campos
-        .filter(([_, v]) => v)
-        .map(([label, v]) => `
-          <tr>
-            <td style="color:#888;padding:2px 10px 2px 0;white-space:nowrap">${label}</td>
-            <td style="font-weight:600">${v}</td>
-          </tr>`).join("")
-      return `
-        <div style="font-family:sans-serif;font-size:12px;min-width:180px">
-          <div style="font-size:13px;font-weight:700;margin-bottom:6px;
-            border-bottom:1px solid #eee;padding-bottom:4px">${titulo}</div>
-          <table>${linhas}</table>
-        </div>`
-    }
+    // 4. Plano de voo — colorido por id
+    registrar("planovoo", L.geoJSON(planoVoo, {
+      style(feature) {
+        const id  = parseInt(feature.properties?.id) || 1
+        const cor = coresBlocos[id] || coresBlocos[1]
+        return {
+          color: "#ffffff",
+          weight: 1.5,
+          fillColor: cor.fill,
+          fillOpacity: cor.opacity
+        }
+      },
+      onEachFeature(feature, layer) {
+        const p   = feature.properties || {}
+        const id  = prop(p, "id", "ID") || "—"
+        const cor = coresBlocos[parseInt(id)] || coresBlocos[1]
+        layer.bindPopup(popupHTML("Plano de Voo", [
+          ["Bloco",     `${id}`],
+          ["Nome",      prop(p, "name", "nome", "Name")],
+          ["Descrição", prop(p, "description", "descricao")]
+        ]))
+        layer.on("mouseover", () => layer.setStyle({ fillOpacity: Math.min(cor.opacity + 0.2, 0.8), weight: 2.5 }))
+        layer.on("mouseout",  () => layer.setStyle({ fillOpacity: cor.opacity, weight: 1.5 }))
+      }
+    }).addTo(map))
 
-    // ── Paleta CNFP ─────────────────────────────────────
-    const coresCNFP = {
-      "SEM DESTINACAO":    { color: "#b8860b", fill: "#FFD700", opacity: 0.75 },
-      "USO SUSTENTAVEL":   { color: "#00838f", fill: "#00BCD4", opacity: 0.70 },
-      "PROTECAO INTEGRAL": { color: "#6a0080", fill: "#CE93D8", opacity: 0.70 },
-      "USO MILITAR":       { color: "#b71c1c", fill: "#EF5350", opacity: 0.70 }
-    }
+    // 5. SICAR — desativado por padrão
+    registrar("sicar", L.geoJSON(sicar, {
+      renderer,
+      style: { color: "rgba(255,255,255,0.3)", weight: 0.6, fillColor: "#fff", fillOpacity: 0.04 },
+      onEachFeature(feature, layer) {
+        const p = feature.properties || {}
+        layer.bindPopup(popupHTML("Imóvel SICAR", [
+          ["CAR",       prop(p, "cod_imovel")],
+          ["Município", prop(p, "municipio")],
+          ["UF",        prop(p, "uf")]
+        ]))
+      }
+    }))
+    // SICAR começa desativado — remove do mapa e reflete no painel
+    document.querySelector('[data-camada="sicar"] input').checked = false
+    document.querySelector('[data-camada="sicar"]').classList.remove("ativo")
 
-    const renderer = L.canvas()
-
-    // ── Legenda ─────────────────────────────────────────
-    const legenda = L.control({ position: "bottomleft" })
-    legenda.onAdd = () => {
-      const el = L.DomUtil.create("div")
-      el.style.cssText = `
-        background:rgba(255,255,255,0.92); padding:8px 12px; border-radius:8px;
-        box-shadow:0 1px 6px rgba(0,0,0,0.35); font-family:sans-serif;
-        font-size:11px; line-height:1.9; color:#222;
-      `
-      el.innerHTML = `
-        <div style="font-weight:700;margin-bottom:4px;font-size:12px">🌿 CNFP 2024</div>
-        ${Object.entries(coresCNFP).map(([cat, cor]) => `
-          <div style="display:flex;align-items:center;gap:6px">
-            <span style="display:inline-block;width:14px;height:14px;flex-shrink:0;
-              background:${cor.fill};border:2px solid ${cor.color};border-radius:3px">
-            </span>
-            <span${cat === "SEM DESTINACAO" ? ' style="font-weight:700"' : ""}>${cat}</span>
-          </div>`).join("")}
-        <div style="margin-top:6px;border-top:1px solid #ddd;padding-top:5px;
-          display:flex;align-items:center;gap:6px">
-          <span style="display:inline-block;width:18px;height:3px;
-            background:#ffffff;border-radius:2px"></span>
-          <span>Área de sobrevoo</span>
-        </div>
-      `
-      return el
-    }
-
-    // ── Carrega GeoJSONs e monta o mapa ─────────────────
-    // Os arquivos precisam estar na mesma pasta que o index.html
-    Promise.all([
-      fetch("lim_estados_amazon_legal.geojson").then(r => r.json()),
-      fetch("CNFP_2024_AR.geojson").then(r => r.json()),
-      fetch("plano-voo-blocos_1a4_AR.geojson").then(r => r.json()),
-      fetch("Perimetro_imoveis_SICAR_AR.geojson").then(r => r.json())
-    ]).then(([estados, cnfp, planoVoo, sicar]) => {
-
-      const camadaEstados = L.geoJSON(estados, {
-        style: { color: "#ffffff", weight: 1.4, fillOpacity: 0, dashArray: "5,5" }
-      }).addTo(map)
-
-      const camadaCNFP = L.geoJSON(cnfp, {
-        renderer,
-        style(feature) {
-          const cat = (feature.properties?.protecao || "").toUpperCase().trim()
-          const cor = coresCNFP[cat] || { color: "#aaa", fill: "#ccc", opacity: 0.35 }
-          return { color: cor.color, weight: 1.1, fillColor: cor.fill, fillOpacity: cor.opacity }
+    // 6–9. MapBiomas — pontos e linhas, sem interação
+    function estiloPonto(cor) {
+      return {
+        pointToLayer(feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: 4,
+            color: cor.color,
+            fillColor: cor.color,
+            fillOpacity: cor.opacity,
+            weight: 1,
+            opacity: cor.opacity
+          })
         },
-        onEachFeature(feature, layer) {
-          const p = feature.properties || {}
-          layer.bindPopup(popupHTML("🌿 CNFP 2024", [
-            ["Nome",     prop(p, "nome", "name")],
-            ["Proteção", prop(p, "protecao")],
-            ["Tipo",     prop(p, "tipo", "type")]
-          ]))
-        }
-      }).addTo(map)
-
-      const camadaPlanoVoo = L.geoJSON(planoVoo, {
-        style: { color: "#ffffff", weight: 2.4, fillColor: "#FF6B00", fillOpacity: 0.12 },
-        onEachFeature(feature, layer) {
-          const p = feature.properties || {}
-          layer.bindPopup(popupHTML("✈️ Plano de Voo", [
-            ["Nome",      prop(p, "name", "nome", "Name")],
-            ["Descrição", prop(p, "description", "descricao")]
-          ]))
-        }
-      }).addTo(map)
-
-      const camadaSicar = L.geoJSON(sicar, {
-        renderer,
-        style: { color: "#ffffff", weight: 0.7, fillColor: "#ffffff", fillOpacity: 0.07 },
-        onEachFeature(feature, layer) {
-          const p = feature.properties || {}
-          layer.bindPopup(popupHTML("🏠 Imóvel SICAR", [
-            ["CAR",       prop(p, "cod_imovel")],
-            ["Município", prop(p, "municipio")],
-            ["UF",        prop(p, "uf")]
-          ]))
-        }
-      })
-
-      // Controle de camadas
-      L.control.layers(null, {
-        "Limite — Estados":              camadaEstados,
-        "🌿 CNFP 2024":                 camadaCNFP,
-        "✈️ Plano de voo (blocos 1–4)": camadaPlanoVoo,
-        "🏠 Imóveis SICAR ⚠️ lento":   camadaSicar
-      }, { collapsed: true }).addTo(map)
-
-      legenda.addTo(map)
-      L.control.scale({ metric: true, imperial: false }).addTo(map)
-
-      // Zoom nos bounds do plano de voo
-      try {
-        const bounds = camadaPlanoVoo.getBounds()
-        if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 40] })
-      } catch(e) {
-        map.setView([-4.5, -60], 7)
+        style: { color: cor.color, weight: 1, opacity: cor.opacity, fillOpacity: 0 }
       }
+    }
 
-    }).catch(err => {
-      console.error("Erro ao carregar GeoJSON:", err)
+    const layerDisp1  = L.geoJSON(disp1,   estiloPonto(coresMapBiomas.disponivel1))
+    const layerCTA    = L.geoJSON(ctanec,  estiloPonto(coresMapBiomas.ctanec))
+    const layerCTA2   = L.geoJSON(ctanec2, estiloPonto(coresMapBiomas.ctanec2))
+    const layerDisp2  = L.geoJSON(disp2,   estiloPonto(coresMapBiomas.disponivel2))
+
+    registrar("disponivel1", layerDisp1)
+    registrar("ctanec",      layerCTA)
+    registrar("ctanec2",     layerCTA2)
+    registrar("disponivel2", layerDisp2)
+
+    // MapBiomas começa desativado
+    ;["disponivel1","ctanec","ctanec2","disponivel2"].forEach(key => {
+      document.querySelector(`[data-camada="${key}"] input`).checked = false
+      document.querySelector(`[data-camada="${key}"]`).classList.remove("ativo")
     })
-  </script>
+
+    // Escala
+    L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map)
+
+    // Zoom inicial nos blocos de voo
+    try {
+      const bounds = camadas["planovoo"].getBounds()
+      if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 280] })
+    } catch(e) {
+      map.setView([-4.5, -60], 7)
+    }
+
+  }).catch(err => {
+    console.error("Erro ao carregar GeoJSON:", err)
+  })
+</script>
 </body>
 </html>
