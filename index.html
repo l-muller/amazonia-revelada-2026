@@ -140,6 +140,14 @@
       flex-shrink: 0;
     }
 
+    .legenda-linha {
+      width: 18px;
+      height: 3px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      opacity: 0.85;
+    }
+    
     .legenda-label {
       font-size: 10px;
       color: rgba(255,255,255,0.55);
@@ -275,30 +283,6 @@
       <span class="camada-nome">Plano de Voo — Blocos 1 a 4</span>
     </label>
 
-    <label class="camada-item" data-camada="disponivel1">
-      <input type="checkbox">
-      <div class="camada-toggle"></div>
-      <span class="camada-nome">MapBiomas — Disponível 1</span>
-    </label>
-
-    <label class="camada-item" data-camada="ctanec">
-      <input type="checkbox">
-      <div class="camada-toggle"></div>
-      <span class="camada-nome">MapBiomas — Necessidade CTA</span>
-    </label>
-
-    <label class="camada-item" data-camada="ctanec2">
-      <input type="checkbox">
-      <div class="camada-toggle"></div>
-      <span class="camada-nome">MapBiomas — Necessidade CTA 2</span>
-    </label>
-
-    <label class="camada-item" data-camada="disponivel2">
-      <input type="checkbox">
-      <div class="camada-toggle"></div>
-      <span class="camada-nome">MapBiomas — Disponível 2</span>
-    </label>
-
     <label class="camada-item" data-camada="sicar">
       <input type="checkbox">
       <div class="camada-toggle"></div>
@@ -312,14 +296,58 @@
   </div>
 
   <div class="secao">
-    <div class="secao-titulo">Blocos de Voo</div>
-    <div class="bloco-gradiente"></div>
-    <div class="bloco-labels">
-      <span>Bloco 1</span>
-      <span>Bloco 4</span>
+    <div class="secao-titulo">MapBiomas — apoio ao plano de voo</div>
+
+    <div class="legenda-item">
+      <div class="legenda-linha" style="background:#34d399"></div>
+      <span class="legenda-label">Disponível 1</span>
     </div>
-    <div style="font-size:9px;color:rgba(255,255,255,0.25);margin-top:6px;line-height:1.5">
-      Sequência de sobrevoo.<br>Clique nos blocos para detalhes.
+
+    <div class="legenda-item">
+      <div class="legenda-linha" style="background:#60a5fa"></div>
+      <span class="legenda-label">Necessidade CTA</span>
+    </div>
+
+    <div class="legenda-item">
+      <div class="legenda-linha" style="background:#818cf8"></div>
+      <span class="legenda-label">Necessidade CTA 2</span>
+    </div>
+
+    <div class="legenda-item">
+      <div class="legenda-linha" style="background:#6ee7b7"></div>
+      <span class="legenda-label">Disponível 2</span>
+    </div>
+
+    <div style="font-size:9px;color:rgba(255,255,255,0.25);margin-top:8px;line-height:1.5">
+      Camadas auxiliares de referência do MapBiomas.
+    </div>
+  </div>
+
+  <div class="secao">
+    <div class="secao-titulo">Blocos de Voo</div>
+
+    <div class="legenda-item">
+      <div class="legenda-cor" style="background:transparent;border:2px solid #ff8a3d"></div>
+      <span class="legenda-label">Bloco 1</span>
+    </div>
+
+    <div class="legenda-item">
+      <div class="legenda-cor" style="background:transparent;border:2px solid #ffb86b"></div>
+      <span class="legenda-label">Bloco 2</span>
+    </div>
+
+    <div class="legenda-item">
+      <div class="legenda-cor" style="background:transparent;border:2px solid #ff5c5c"></div>
+      <span class="legenda-label">Bloco 3</span>
+    </div>
+
+    <div class="legenda-item">
+      <div class="legenda-cor" style="background:transparent;border:2px solid #ffffff"></div>
+      <span class="legenda-label">Bloco 4</span>
+    </div>
+
+    <div style="font-size:9px;color:rgba(255,255,255,0.25);margin-top:8px;line-height:1.5">
+      Área prevista para sobrevoo.<br>Clique nos blocos para detalhes.
     </div>
   </div>
 
@@ -397,10 +425,10 @@
 
   // ── Paleta blocos de voo (gradiente por id 1–4) ─────
   const coresBlocos = {
-    1: { color: "#fed7aa", fill: "#fed7aa", opacity: 0.25 },
-    2: { color: "#f97316", fill: "#f97316", opacity: 0.30 },
-    3: { color: "#c2410c", fill: "#c2410c", opacity: 0.38 },
-    4: { color: "#7c2d12", fill: "#7c2d12", opacity: 0.48 }
+  1: { color: "#ff8a3d" },
+  2: { color: "#ffb86b" },
+  3: { color: "#ff5c5c" },
+  4: { color: "#ffffff" }
   }
 
   // ── Paleta MapBiomas (coadjuvantes, sem interação) ──
@@ -508,28 +536,46 @@
     }).addTo(map))
 
     // 4. Plano de voo — colorido por id
+    // 4. Plano de voo — borda colorida por ID, preenchimento transparente
     registrar("planovoo", L.geoJSON(planoVoo, {
       style(feature) {
-        const id  = parseInt(feature.properties?.id) || 1
+        const p = feature.properties || {}
+        const id = parseInt(prop(p, "id", "ID")) || 1
         const cor = coresBlocos[id] || coresBlocos[1]
+
         return {
-          color: "#ffffff",
-          weight: 1.5,
-          fillColor: cor.fill,
-          fillOpacity: cor.opacity
+          color: cor.color,
+          weight: 2.8,
+          opacity: 0.95,
+          fillColor: "transparent",
+          fillOpacity: 0
         }
       },
       onEachFeature(feature, layer) {
-        const p   = feature.properties || {}
-        const id  = prop(p, "id", "ID") || "—"
+        const p = feature.properties || {}
+        const id = prop(p, "id", "ID") || "—"
         const cor = coresBlocos[parseInt(id)] || coresBlocos[1]
+
         layer.bindPopup(popupHTML("Plano de Voo", [
-          ["Bloco",     `${id}`],
-          ["Nome",      prop(p, "name", "nome", "Name")],
+          ["Bloco", `${id}`],
+          ["Nome", prop(p, "name", "nome", "Name")],
           ["Descrição", prop(p, "description", "descricao")]
         ]))
-        layer.on("mouseover", () => layer.setStyle({ fillOpacity: Math.min(cor.opacity + 0.2, 0.8), weight: 2.5 }))
-        layer.on("mouseout",  () => layer.setStyle({ fillOpacity: cor.opacity, weight: 1.5 }))
+
+        layer.on("mouseover", () => layer.setStyle({
+          color: "#ffffff",
+          weight: 4,
+          fillColor: cor.color,
+          fillOpacity: 0.08
+        }))
+
+        layer.on("mouseout", () => layer.setStyle({
+          color: cor.color,
+          weight: 2.8,
+          opacity: 0.95,
+          fillColor: "transparent",
+          fillOpacity: 0
+        }))
       }
     }).addTo(map))
 
@@ -551,37 +597,35 @@
     document.querySelector('[data-camada="sicar"]').classList.remove("ativo")
 
     // 6–9. MapBiomas — pontos e linhas, sem interação
-    function estiloPonto(cor) {
+    // 6–9. MapBiomas — desenho auxiliar, sempre visível, sem toggle e sem clique
+    function estiloAuxiliarMapBiomas(cor) {
       return {
         pointToLayer(feature, latlng) {
           return L.circleMarker(latlng, {
-            radius: 4,
+            radius: 3,
             color: cor.color,
             fillColor: cor.color,
-            fillOpacity: cor.opacity,
+            fillOpacity: 0.45,
             weight: 1,
-            opacity: cor.opacity
+            opacity: 0.55,
+            interactive: false
           })
         },
-        style: { color: cor.color, weight: 1, opacity: cor.opacity, fillOpacity: 0 }
+        style: {
+          color: cor.color,
+          weight: 1.1,
+          opacity: 0.45,
+          fillOpacity: 0,
+          dashArray: "3,5",
+          interactive: false
+        }
       }
     }
 
-    const layerDisp1  = L.geoJSON(disp1,   estiloPonto(coresMapBiomas.disponivel1))
-    const layerCTA    = L.geoJSON(ctanec,  estiloPonto(coresMapBiomas.ctanec))
-    const layerCTA2   = L.geoJSON(ctanec2, estiloPonto(coresMapBiomas.ctanec2))
-    const layerDisp2  = L.geoJSON(disp2,   estiloPonto(coresMapBiomas.disponivel2))
-
-    registrar("disponivel1", layerDisp1)
-    registrar("ctanec",      layerCTA)
-    registrar("ctanec2",     layerCTA2)
-    registrar("disponivel2", layerDisp2)
-
-    // MapBiomas começa desativado
-    ;["disponivel1","ctanec","ctanec2","disponivel2"].forEach(key => {
-      document.querySelector(`[data-camada="${key}"] input`).checked = false
-      document.querySelector(`[data-camada="${key}"]`).classList.remove("ativo")
-    })
+    L.geoJSON(disp1, estiloAuxiliarMapBiomas(coresMapBiomas.disponivel1)).addTo(map)
+    L.geoJSON(ctanec, estiloAuxiliarMapBiomas(coresMapBiomas.ctanec)).addTo(map)
+    L.geoJSON(ctanec2, estiloAuxiliarMapBiomas(coresMapBiomas.ctanec2)).addTo(map)
+    L.geoJSON(disp2, estiloAuxiliarMapBiomas(coresMapBiomas.disponivel2)).addTo(map)
 
     // Escala
     L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map)
