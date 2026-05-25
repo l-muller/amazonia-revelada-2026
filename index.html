@@ -571,9 +571,9 @@ window.addEventListener('load', function () {
 
     try {
       const bounds = camadas["planovoo"].getBounds()
-      if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 280] })
+      if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 280]})
     } catch(e) {
-      map.setView([-4.5, -60], 7)
+      map.setView([-4.5, -60], 8)
     }
 
   }).catch(err => {
