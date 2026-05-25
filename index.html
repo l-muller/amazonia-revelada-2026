@@ -101,7 +101,7 @@
     // ── Carrega GeoJSONs e monta o mapa ─────────────────
     // Os arquivos precisam estar na mesma pasta que o index.html
     Promise.all([
-      fetch("lim_estados_amazonia_legal.geojson").then(r => r.json()),
+      fetch("lim_estados_amazon_legal.geojson").then(r => r.json()),
       fetch("CNFP_2024_AR.geojson").then(r => r.json()),
       fetch("plano-voo-blocos_1a4_AR.geojson").then(r => r.json()),
       fetch("Perimetro_imoveis_SICAR_AR.geojson").then(r => r.json())
