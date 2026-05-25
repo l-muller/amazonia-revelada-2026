@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plano de Voos 2026 — Amazônia Revelada</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #mapa {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div id="mapa"></div>
+
+  <script>
+    const map = L.map("mapa", {
+      scrollWheelZoom: true,
+      preferCanvas: true,
+      center: [-4.5, -60],
+      zoom: 7
+    })
+
+    L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+        subdomains: "abcd",
+        maxZoom: 20
+      }
+    ).addTo(map)
+
+    // ── Utilitários ─────────────────────────────────────
+    function prop(props, ...keys) {
+      for (const k of keys) {
+        const found = Object.keys(props).find(p => p.toLowerCase() === k.toLowerCase())
+        if (found && props[found]) return props[found]
+      }
+      return null
+    }
+
+    function popupHTML(titulo, campos) {
+      const linhas = campos
+        .filter(([_, v]) => v)
+        .map(([label, v]) => `
+          <tr>
+            <td style="color:#888;padding:2px 10px 2px 0;white-space:nowrap">${label}</td>
+            <td style="font-weight:600">${v}</td>
+          </tr>`).join("")
+      return `
+        <div style="font-family:sans-serif;font-size:12px;min-width:180px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:6px;
+            border-bottom:1px solid #eee;padding-bottom:4px">${titulo}</div>
+          <table>${linhas}</table>
+        </div>`
+    }
+
+    // ── Paleta CNFP ─────────────────────────────────────
+    const coresCNFP = {
+      "SEM DESTINACAO":    { color: "#b8860b", fill: "#FFD700", opacity: 0.75 },
+      "USO SUSTENTAVEL":   { color: "#00838f", fill: "#00BCD4", opacity: 0.70 },
+      "PROTECAO INTEGRAL": { color: "#6a0080", fill: "#CE93D8", opacity: 0.70 },
+      "USO MILITAR":       { color: "#b71c1c", fill: "#EF5350", opacity: 0.70 }
+    }
+
+    const renderer = L.canvas()
+
+    // ── Legenda ─────────────────────────────────────────
+    const legenda = L.control({ position: "bottomleft" })
+    legenda.onAdd = () => {
+      const el = L.DomUtil.create("div")
+      el.style.cssText = `
+        background:rgba(255,255,255,0.92); padding:8px 12px; border-radius:8px;
+        box-shadow:0 1px 6px rgba(0,0,0,0.35); font-family:sans-serif;
+        font-size:11px; line-height:1.9; color:#222;
+      `
+      el.innerHTML = `
+        <div style="font-weight:700;margin-bottom:4px;font-size:12px">🌿 CNFP 2024</div>
+        ${Object.entries(coresCNFP).map(([cat, cor]) => `
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="display:inline-block;width:14px;height:14px;flex-shrink:0;
+              background:${cor.fill};border:2px solid ${cor.color};border-radius:3px">
+            </span>
+            <span${cat === "SEM DESTINACAO" ? ' style="font-weight:700"' : ""}>${cat}</span>
+          </div>`).join("")}
+        <div style="margin-top:6px;border-top:1px solid #ddd;padding-top:5px;
+          display:flex;align-items:center;gap:6px">
+          <span style="display:inline-block;width:18px;height:3px;
+            background:#ffffff;border-radius:2px"></span>
+          <span>Área de sobrevoo</span>
+        </div>
+      `
+      return el
+    }
+
+    // ── Carrega GeoJSONs e monta o mapa ─────────────────
+    // Os arquivos precisam estar na mesma pasta que o index.html
+    Promise.all([
+      fetch("lim_estados_amazonia_legal.geojson").then(r => r.json()),
+      fetch("CNFP_2024_AR.geojson").then(r => r.json()),
+      fetch("plano-voo-blocos_1a4_AR.geojson").then(r => r.json()),
+      fetch("Perimetro_imoveis_SICAR_AR.geojson").then(r => r.json())
+    ]).then(([estados, cnfp, planoVoo, sicar]) => {
+
+      const camadaEstados = L.geoJSON(estados, {
+        style: { color: "#ffffff", weight: 1.4, fillOpacity: 0, dashArray: "5,5" }
+      }).addTo(map)
+
+      const camadaCNFP = L.geoJSON(cnfp, {
+        renderer,
+        style(feature) {
+          const cat = (feature.properties?.protecao || "").toUpperCase().trim()
+          const cor = coresCNFP[cat] || { color: "#aaa", fill: "#ccc", opacity: 0.35 }
+          return { color: cor.color, weight: 1.1, fillColor: cor.fill, fillOpacity: cor.opacity }
+        },
+        onEachFeature(feature, layer) {
+          const p = feature.properties || {}
+          layer.bindPopup(popupHTML("🌿 CNFP 2024", [
+            ["Nome",     prop(p, "nome", "name")],
+            ["Proteção", prop(p, "protecao")],
+            ["Tipo",     prop(p, "tipo", "type")]
+          ]))
+        }
+      }).addTo(map)
+
+      const camadaPlanoVoo = L.geoJSON(planoVoo, {
+        style: { color: "#ffffff", weight: 2.4, fillColor: "#FF6B00", fillOpacity: 0.12 },
+        onEachFeature(feature, layer) {
+          const p = feature.properties || {}
+          layer.bindPopup(popupHTML("✈️ Plano de Voo", [
+            ["Nome",      prop(p, "name", "nome", "Name")],
+            ["Descrição", prop(p, "description", "descricao")]
+          ]))
+        }
+      }).addTo(map)
+
+      const camadaSicar = L.geoJSON(sicar, {
+        renderer,
+        style: { color: "#ffffff", weight: 0.7, fillColor: "#ffffff", fillOpacity: 0.07 },
+        onEachFeature(feature, layer) {
+          const p = feature.properties || {}
+          layer.bindPopup(popupHTML("🏠 Imóvel SICAR", [
+            ["CAR",       prop(p, "cod_imovel")],
+            ["Município", prop(p, "municipio")],
+            ["UF",        prop(p, "uf")]
+          ]))
+        }
+      })
+
+      // Controle de camadas
+      L.control.layers(null, {
+        "Limite — Estados":              camadaEstados,
+        "🌿 CNFP 2024":                 camadaCNFP,
+        "✈️ Plano de voo (blocos 1–4)": camadaPlanoVoo,
+        "🏠 Imóveis SICAR ⚠️ lento":   camadaSicar
+      }, { collapsed: true }).addTo(map)
+
+      legenda.addTo(map)
+      L.control.scale({ metric: true, imperial: false }).addTo(map)
+
+      // Zoom nos bounds do plano de voo
+      try {
+        const bounds = camadaPlanoVoo.getBounds()
+        if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 40] })
+      } catch(e) {
+        map.setView([-4.5, -60], 7)
+      }
+
+    }).catch(err => {
+      console.error("Erro ao carregar GeoJSON:", err)
+    })
+  </script>
+</body>
+</html>
