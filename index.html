@@ -16,6 +16,9 @@
       font-family: 'Segoe UI', system-ui, sans-serif;
     }
 
+    /* Remove highlight azul do clique do Leaflet */
+    .leaflet-interactive:focus { outline: none; }
+
     #painel {
       position: absolute;
       top: 0;
@@ -166,12 +169,12 @@
     }
 
     .municipio-tooltip {
-      background: rgba(10,14,20,0.9) !important;
-      border: 1px solid rgba(255,255,255,0.1) !important;
+      background: rgba(10,14,20,0.85) !important;
+      border: 1px solid rgba(255,255,255,0.08) !important;
       border-radius: 4px !important;
-      color: #fff !important;
-      font-size: 11px !important;
-      padding: 4px 8px !important;
+      color: rgba(255,255,255,0.75) !important;
+      font-size: 10px !important;
+      padding: 3px 7px !important;
       font-family: 'Segoe UI', system-ui, sans-serif !important;
       box-shadow: none !important;
     }
@@ -390,7 +393,6 @@ window.addEventListener('load', function () {
     disponivel2: { color: "#6ee7b7", opacity: 0.55 }
   }
 
-  // Legenda CNFP
   const legendaCNFP = document.getElementById("legenda-cnfp")
   Object.entries(coresCNFP).forEach(([cat, cor]) => {
     legendaCNFP.innerHTML += `
@@ -400,7 +402,6 @@ window.addEventListener('load', function () {
       </div>`
   })
 
-  // Legenda blocos
   const legendaBlocos = document.getElementById("legenda-blocos")
   Object.entries(coresBlocos).forEach(([id, cor]) => {
     legendaBlocos.innerHTML += `
@@ -410,7 +411,6 @@ window.addEventListener('load', function () {
       </div>`
   })
 
-  // Toggle de camadas
   const camadas = {}
 
   function registrar(key, layer) {
@@ -448,24 +448,27 @@ window.addEventListener('load', function () {
       style: { color: "#ffffff", weight: 1.2, fillOpacity: 0, dashArray: "4,4" }
     }).addTo(map))
 
-    // 2. Municípios
+    // 2. Municípios — só linha discreta + tooltip com nome
+    // sem hover, sem highlight, sem popup — camada auxiliar
     registrar("municipios", L.geoJSON(municipios, {
       pane: 'pane-municipios',
-      style: { color: "rgba(255,255,255,0.15)", weight: 0.6, fillOpacity: 0 },
+      style: {
+        color: "rgba(255,255,255,0.12)",
+        weight: 0.5,
+        fillOpacity: 0,
+        fillColor: "transparent",
+        interactive: true
+      },
       onEachFeature(feature, layer) {
         const p    = feature.properties || {}
         const nome = prop(p, "nome", "name", "municipio", "NM_MUN") || "Município"
-        const uf   = prop(p, "uf", "UF", "SIGLA_UF") || ""
         layer.bindTooltip(nome, {
           permanent: false,
           className: "municipio-tooltip",
           direction: "center",
-          opacity: 0.9
+          opacity: 0.9,
+          sticky: true  // tooltip segue o mouse, sem prender no centro
         })
-        layer.bindPopup(popupHTML("Município", [
-          ["Nome", nome],
-          ["UF",   uf]
-        ]))
       }
     }).addTo(map))
 
@@ -511,7 +514,7 @@ window.addEventListener('load', function () {
     // 5. SICAR — desativado por padrão
     registrar("sicar", L.geoJSON(sicar, {
       pane: 'pane-sicar',
-      style: { color: "rgba(255,255,255,0.3)", weight: 0.6, fillColor: "#fff", fillOpacity: 0.04 },
+      style: { color: "rgba(255,255,255,0.3)", weight: 0.6, fillColor: "transparent", fillOpacity: 0 },
       onEachFeature(feature, layer) {
         const p = feature.properties || {}
         layer.bindPopup(popupHTML("Imóvel SICAR", [
@@ -524,7 +527,7 @@ window.addEventListener('load', function () {
     document.querySelector('[data-camada="sicar"] input').checked = false
     document.querySelector('[data-camada="sicar"]').classList.remove("ativo")
 
-    // 6–9. MapBiomas — fixos, sem toggle, sempre visíveis
+    // 6–9. MapBiomas — fixos, sem toggle
     function estiloMapBiomas(cor) {
       return {
         pane: 'pane-mapbiomas',
@@ -563,7 +566,7 @@ window.addEventListener('load', function () {
     document.getElementById("erro-carregamento").style.display = "block"
   })
 
-}) // fecha window.addEventListener
+})
 </script>
 </body>
 </html>
