@@ -140,6 +140,16 @@
       flex-shrink: 0;
     }
 
+    .legenda-ponto-vazado {
+      width: 9px;
+      height: 9px;
+      border: 2px solid currentColor;
+      border-radius: 50%;
+      background: transparent;
+      flex-shrink: 0;
+      opacity: 0.95;
+    }
+
     .legenda-linha {
       width: 18px;
       height: 3px;
@@ -280,23 +290,23 @@
     <label class="camada-item ativo" data-camada="planovoo">
       <input type="checkbox" checked>
       <div class="camada-toggle"></div>
-      <span class="camada-nome">Plano de Voo — Blocos 1 a 4</span>
+      <span class="camada-nome">Plano de Voo | Blocos 1 a 4</span>
     </label>
 
     <label class="camada-item" data-camada="sicar">
       <input type="checkbox">
       <div class="camada-toggle"></div>
-      <span class="camada-nome">Imóveis SICAR — lento</span>
+      <span class="camada-nome">Imóveis SICAR </span>
     </label>
   </div>
 
   <div class="secao">
-    <div class="secao-titulo">CNFP 2024 — Proteção</div>
+    <div class="secao-titulo">Florestas Públicas (CNFP) </div>
     <div id="legenda-cnfp"></div>
   </div>
 
   <div class="secao">
-    <div class="secao-titulo">MapBiomas — apoio ao plano de voo</div>
+    <div class="secao-titulo">MapBiomas - apoio ao plano de voo</div>
 
     <div class="legenda-item">
       <div class="legenda-linha" style="background:#34d399"></div>
@@ -309,13 +319,13 @@
     </div>
 
     <div class="legenda-item">
-      <div class="legenda-linha" style="background:#818cf8"></div>
+      <div class="legenda-ponto-vazado" style="border-color:#818cf8"></div>
       <span class="legenda-label">Necessidade CTA 2</span>
     </div>
 
     <div class="legenda-item">
-      <div class="legenda-linha" style="background:#6ee7b7"></div>
-      <span class="legenda-label">Disponível 2</span>
+       <div class="legenda-ponto-vazado" style="border-color:#6ee7b7"></div>
+       <span class="legenda-label">Disponível 2</span>
     </div>
 
     <div style="font-size:9px;color:rgba(255,255,255,0.25);margin-top:8px;line-height:1.5">
@@ -545,8 +555,8 @@
 
         return {
           color: cor.color,
-          weight: 2.8,
-          opacity: 0.95,
+          weight: 1.6,
+          opacity: 0.9,
           fillColor: "transparent",
           fillOpacity: 0
         }
@@ -564,15 +574,15 @@
 
         layer.on("mouseover", () => layer.setStyle({
           color: "#ffffff",
-          weight: 4,
+          weight: 2.4,
           fillColor: cor.color,
-          fillOpacity: 0.08
+          fillOpacity: 0.06
         }))
 
         layer.on("mouseout", () => layer.setStyle({
           color: cor.color,
-          weight: 2.8,
-          opacity: 0.95,
+          weight: 1.6,
+          opacity: 0.9,
           fillColor: "transparent",
           fillOpacity: 0
         }))
@@ -602,30 +612,30 @@
       return {
         pointToLayer(feature, latlng) {
           return L.circleMarker(latlng, {
-            radius: 3,
-            color: cor.color,
+            radius: 5.5,
+            color: "#ffffff",
             fillColor: cor.color,
-            fillOpacity: 0.45,
-            weight: 1,
-            opacity: 0.55,
+            fillOpacity: 0.95,
+            weight: 1.8,
+            opacity: 0.95,
             interactive: false
           })
         },
         style: {
           color: cor.color,
-          weight: 1.1,
-          opacity: 0.45,
+          weight: 1.3,
+          opacity: 0.65,
           fillOpacity: 0,
-          dashArray: "3,5",
+          dashArray: "4,5",
           interactive: false
         }
       }
     }
 
-    L.geoJSON(disp1, estiloAuxiliarMapBiomas(coresMapBiomas.disponivel1)).addTo(map)
-    L.geoJSON(ctanec, estiloAuxiliarMapBiomas(coresMapBiomas.ctanec)).addTo(map)
-    L.geoJSON(ctanec2, estiloAuxiliarMapBiomas(coresMapBiomas.ctanec2)).addTo(map)
-    L.geoJSON(disp2, estiloAuxiliarMapBiomas(coresMapBiomas.disponivel2)).addTo(map)
+    L.geoJSON(disp1, estiloLinhaMapBiomas(coresMapBiomas.disponivel1)).addTo(map)
+    L.geoJSON(disp2, estiloPontoMapBiomas(coresMapBiomas.disponivel2)).addTo(map)
+    L.geoJSON(ctanec2, estiloPontoMapBiomas(coresMapBiomas.ctanec2)).addTo(map)
+    L.geoJSON(ctanec, estiloLinhaMapBiomas(coresMapBiomas.ctanec)).addTo(map)
 
     // Escala
     L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map)
