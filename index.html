@@ -256,12 +256,38 @@
       #painel.aberto { display: flex; }
       #btn-painel-mobile { display: block; }
       #spinner { left: 50%; }
+
+          #btn-reset {
+      position: absolute;
+      top: 80px;
+      left: 10px;
+      z-index: 1000;
+      background: rgba(10,14,20,0.9);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.7);
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      line-height: 30px;
+      text-align: center;
+      padding: 0;
+    }
+
+    #btn-reset:hover {
+      background: rgba(99,179,237,0.2);
+      color: #fff;
     }
   </style>
 </head>
 <body>
 
 <div id="mapa"></div>
+
+<button id="btn-reset" onclick="map.setView([-4.5, -60], 7)" title="Reset">
+  ↺
+</button>
 
 <div id="spinner">
   <div id="spinner-circulo"></div>
@@ -568,13 +594,6 @@ window.addEventListener('load', function () {
     L.geoJSON(disp2,   estiloMapBiomas(coresMapBiomas.disponivel2)).addTo(map)
 
     L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map)
-
-    try {
-  const bounds = camadas["planovoo"].getBounds()
-  if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 280], maxZoom: 8 })
-} catch(e) {
-  map.setView([-5.5, -62], 7)
-}
 
   }).catch(err => {
     console.error("Erro crítico ao carregar dados:", err)
