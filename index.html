@@ -280,6 +280,56 @@
       background: rgba(99,179,237,0.2);
       color: #fff;
     }
+
+#modal-boas-vindas {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 8, 12, 0.88);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+#modal-conteudo {
+  text-align: center;
+  max-width: 320px;
+  padding: 0 24px;
+  pointer-events: none;
+}
+
+#modal-projeto {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 10px;
+}
+
+#modal-titulo {
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.3;
+  margin-bottom: 16px;
+}
+
+#modal-desc {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+#modal-cta {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+    
   </style>
 </head>
 <body>
@@ -604,5 +654,15 @@ window.addEventListener('load', function () {
 
 }) // fecha window.addEventListener
 </script>
+
+  <div id="modal-boas-vindas" onclick="this.style.display='none'">
+  <div id="modal-conteudo">
+    <div id="modal-projeto">Amazônia Revelada</div>
+    <h2 id="modal-titulo">Plano de Voos<br>LiDAR 2026</h2>
+    <p id="modal-desc">Visualização do planejamento de voos para coleta de dados LiDAR ao longo da BR-319 e entorno.</p>
+    <span id="modal-cta">Abrir mapa →</span>
+  </div>
+</div>
+  
 </body>
 </html>
