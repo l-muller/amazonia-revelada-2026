@@ -256,8 +256,9 @@
       #painel.aberto { display: flex; }
       #btn-painel-mobile { display: block; }
       #spinner { left: 50%; }
-
-          #btn-reset {
+    }
+    
+    #btn-reset {
       position: absolute;
       top: 80px;
       left: 10px;
@@ -285,9 +286,7 @@
 
 <div id="mapa"></div>
 
-<button id="btn-reset" onclick="map.setView([-4.5, -60], 7)" title="Reset">
-  ↺
-</button>
+<button id="btn-reset" onclick="document.querySelector('#mapa')._leaflet_map?.setView([-4.5,-60],7)" title="Reset">↺</button>
 
 <div id="spinner">
   <div id="spinner-circulo"></div>
