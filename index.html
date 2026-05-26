@@ -570,11 +570,11 @@ window.addEventListener('load', function () {
     L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map)
 
     try {
-      const bounds = camadas["planovoo"].getBounds()
-      if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 280]})
-    } catch(e) {
-      map.setView([-4.5, -60], 8)
-    }
+  const bounds = camadas["planovoo"].getBounds()
+  if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 280], maxZoom: 8 })
+} catch(e) {
+  map.setView([-4.5, -60], 7)
+}
 
   }).catch(err => {
     console.error("Erro crítico ao carregar dados:", err)
