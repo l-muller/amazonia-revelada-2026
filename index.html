@@ -370,7 +370,9 @@ window.addEventListener('load', function () {
     zoom: 7,
     zoomControl: true
   })
-
+  
+  window._map = map
+  
   map.zoomControl.setPosition('topleft')
 
   map.createPane('pane-estados');    map.getPane('pane-estados').style.zIndex    = 200
