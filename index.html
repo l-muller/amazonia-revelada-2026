@@ -375,6 +375,30 @@
     </label>
   </div>
 
+<label class="camada-item ativo" data-camada="br319">
+  <input type="checkbox" checked>
+  <div class="camada-toggle"></div>
+  <span class="camada-nome">BR-319</span>
+</label>
+
+<label class="camada-item" data-camada="sigef">
+  <input type="checkbox">
+  <div class="camada-toggle"></div>
+  <span class="camada-nome">SIGEF Brasil</span>
+</label>
+
+<label class="camada-item" data-camada="ti">
+  <input type="checkbox">
+  <div class="camada-toggle"></div>
+  <span class="camada-nome">Terras Indígenas</span>
+</label>
+
+<label class="camada-item" data-camada="sitios">
+  <input type="checkbox">
+  <div class="camada-toggle"></div>
+  <span class="camada-nome">Sítios Arqueológicos</span>
+</label>
+
   <div class="secao">
     <div class="secao-titulo">Plano de Voo — Blocos</div>
     <div id="legenda-blocos"></div>
@@ -384,6 +408,29 @@
     <div class="secao-titulo">Florestas Públicas (CNFP)</div>
     <div id="legenda-cnfp"></div>
   </div>
+
+  <div class="secao">
+    <div class="secao-titulo">Novas Camadas</div>
+    <div class="legenda-item">
+      <div class="legenda-linha" style="background:#f97316;height:3px;width:24px"></div>
+      <span class="legenda-label">BR-319</span>
+  </div>
+    
+  <div class="legenda-item">
+    <div class="legenda-cor" style="background:rgba(250,204,21,0.25);border:1.5px solid #facc15;border-radius:2px"></div>
+    <span class="legenda-label">SIGEF Brasil</span>
+  </div>
+    
+  <div class="legenda-item">
+    <div class="legenda-cor" style="background:rgba(167,139,250,0.30);border:1.5px solid #a78bfa;border-radius:2px"></div>
+    <span class="legenda-label">Terras Indígenas</span>
+  </div>
+    
+  <div class="legenda-item">
+    <div class="legenda-ponto-vazado" style="border-color:#f472b6"></div>
+    <span class="legenda-label">Sítios Arqueológicos</span>
+  </div>
+</div>
 
   <div class="secao">
     <div class="secao-titulo">MapBiomas — Referência</div>
@@ -429,10 +476,15 @@ window.addEventListener('load', function () {
   map.createPane('pane-mapbiomas');  map.getPane('pane-mapbiomas').style.zIndex  = 240
   map.createPane('pane-planovoo');   map.getPane('pane-planovoo').style.zIndex   = 260
   map.createPane('pane-cnfp');       map.getPane('pane-cnfp').style.zIndex       = 300
+  map.createPane('pane-sigef');  map.getPane('pane-sigef').style.zIndex  = 310
+  map.createPane('pane-ti');     map.getPane('pane-ti').style.zIndex     = 320
+  map.createPane('pane-br319');  map.getPane('pane-br319').style.zIndex  = 360
+  map.createPane('pane-sitios'); map.getPane('pane-sitios').style.zIndex = 370
   map.createPane('pane-sicar');      map.getPane('pane-sicar').style.zIndex      = 350
   map.createPane('pane-municipios'); map.getPane('pane-municipios').style.zIndex = 400
 
   map.getPane('pane-planovoo').style.pointerEvents = 'none'
+  map.getPane('pane-br319').style.pointerEvents = 'none'
 
   L.tileLayer(
     "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
@@ -489,11 +541,11 @@ window.addEventListener('load', function () {
   })
 
   const legendaCNFP = document.getElementById("legenda-cnfp")
-  Object.entries(coresCNFP).forEach(([cat, cor]) => {
-    legendaCNFP.innerHTML += `
+    Object.entries(coresCNFP).forEach(([cat, cor]) => {
+      legendaCNFP.innerHTML += `
       <div class="legenda-item">
-        <div class="legenda-cor" style="background:${cor.fill};opacity:0.85"></div>
-        <span class="legenda-label${cat === 'SEM DESTINACAO' ? ' destaque' : ''}">${cat}</span>
+      <div class="legenda-cor" style="background:${cor.fill};opacity:0.85"></div>
+      <span class="legenda-label${cat === 'SEM DESTINACAO' ? ' destaque' : ''}">${cat}</span>
       </div>`
   })
 
@@ -539,8 +591,12 @@ window.addEventListener('load', function () {
     fetchGeo("plano-voo-mapbiomas-necessidadeCTA.geojson"),
     fetchGeo("plano-voo-mapbiomas-necessidadeCTA2.geojson"),
     fetchGeo("plano-voo-mapbiomas-disponivel2.geojson"),
+    fetchGeo("br319.geojson"),
+    fetchGeo("sigef_brasil_AR.geojson"),
+    fetchGeo("TI_raio_AR.geojson"),
+    fetchGeo("sitios_AR_raio500km.geojson"),
   ]).then(([estados, municipios, cnfp, planoVoo, sicar,
-            disp1, ctanec, ctanec2, disp2]) => {
+            disp1, ctanec, ctanec2, disp2, br319, sigef, ti, sitios]) => {
 
     document.getElementById("spinner").style.display = "none"
 
@@ -570,10 +626,12 @@ window.addEventListener('load', function () {
       onEachFeature(feature, layer) {
         const p = feature.properties || {}
         layer.bindPopup(popupHTML("CNFP 2024", [
-          ["Nome",     prop(p, "nome", "name")],
-          ["Proteção", prop(p, "protecao")],
-          ["Tipo",     prop(p, "tipo", "type")]
-        ]))
+          ["Nome",      prop(p, "nome")],
+          ["Categoria", prop(p, "categoria")],
+          ["Proteção",  prop(p, "protecao")],
+          ["Classe",    prop(p, "classe")],
+          ["Governo",   prop(p, "governo")]
+]))
       }
     }).addTo(map))
 
@@ -602,9 +660,14 @@ window.addEventListener('load', function () {
       onEachFeature(feature, layer) {
         const p = feature.properties || {}
         layer.bindPopup(popupHTML("Imóvel SICAR", [
-          ["CAR",       prop(p, "cod_imovel")],
+ 
+          ["CAR",          prop(p, "cod_imovel")],
+          ["Tipo",         prop(p, "ind_tipo")],
+          ["Status",       prop(p, "ind_status")],
+          ["Módulos Fis.", prop(p, "mod_fiscal")],
+          ["Criação",      prop(p, "dat_criacao")],
+          ["Atualização",  prop(p, "dat_atuali")]
           ["Município", prop(p, "municipio")],
-          ["UF",        prop(p, "uf")]
         ]))
       }
     }))
@@ -639,6 +702,65 @@ window.addEventListener('load', function () {
       }
     }
 
+    // BR-319
+registrar("br319", L.geoJSON(br319, {
+  pane: 'pane-br319',
+  interactive: false,
+  style: { color: "#f97316", weight: 2.5, opacity: 0.90, fillOpacity: 0 }
+}).addTo(map))
+
+// SIGEF
+registrar("sigef", L.geoJSON(sigef, {
+  pane: 'pane-sigef',
+  style: { color: "#facc15", weight: 0.8, opacity: 0.75, fillColor: "#facc15", fillOpacity: 0.12 },
+  onEachFeature(feature, layer) {
+    const p = feature.properties || {}
+    layer.bindPopup(popupHTML("SIGEF — Imóvel", [
+      ["Nome",      prop(p, "nome_area")],
+      ["Município", prop(p, "municipio_")],
+      ["Situação",        prop(p, "situacao_i")],
+      ["Status", prop(p, "status")]
+    ]))
+  }
+}))
+
+// Terras Indígenas
+registrar("ti", L.geoJSON(ti, {
+  pane: 'pane-ti',
+  style: { color: "#a78bfa", weight: 1.2, opacity: 0.85, fillColor: "#a78bfa", fillOpacity: 0.20 },
+  onEachFeature(feature, layer) {
+    const p = feature.properties || {}
+    layer.bindPopup(popupHTML("Terra Indígena", [
+      ["Nome",       prop(p, "terrai_nom")],
+      ["Etnia",      prop(p, "etnia_nome")],
+      ["Fase",       prop(p, "fase_ti")],
+      ["Município", prop(p, "municipio_")],
+      ["Unid. Adm.",         prop(p, "undadm_sig")]
+    ]))
+  }
+}))
+
+// Sítios Arqueológicos
+registrar("sitios", L.geoJSON(sitios, {
+  pane: 'pane-sitios',
+  pointToLayer(feature, latlng) {
+    return L.circleMarker(latlng, {
+      pane: 'pane-sitios',
+      radius: 5,
+      color: "#f472b6", fillColor: "#f472b6",
+      fillOpacity: 0.55, weight: 1.2, opacity: 0.90
+    })
+  },
+  onEachFeature(feature, layer) {
+    const p = feature.properties || {}
+    layer.bindPopup(popupHTML("Sítio Arqueológico", [
+      ["Nome",      prop(p, "identifica")],
+      ["Cód, IPHAN",    prop(p, "co_iphan")],
+      ["Cadastro", prop(p, "dt_cadastr")],
+    ]))
+  }
+}))
+    
     L.geoJSON(disp1,   estiloMapBiomas(coresMapBiomas.disponivel1)).addTo(map)
     L.geoJSON(ctanec,  estiloMapBiomas(coresMapBiomas.ctanec)).addTo(map)
     L.geoJSON(ctanec2, estiloMapBiomas(coresMapBiomas.ctanec2)).addTo(map)
