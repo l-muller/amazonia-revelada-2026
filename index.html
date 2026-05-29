@@ -641,7 +641,7 @@ window.addEventListener('load', function () {
       })
   }
 
-  document.querySelectorAll(".camada-item:not(.desabilitado)").forEach(item => {
+  document.querySelectorAll(".camada-item:not(.desabilitado):not([data-subtipo]):not([data-substatus])").forEach(item => {
     item.addEventListener("click", () => {
       const key = item.dataset.camada
       const cb  = item.querySelector("input")
