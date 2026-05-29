@@ -875,11 +875,31 @@ registrar("sitios", L.geoJSON(sitios, {
     layer.bindPopup(popupHTML("Sítio Arqueológico", [
       ["Nome",      prop(p, "identifica")],
       ["Cód, IPHAN",    prop(p, "co_iphan")],
-      ["Cadastro", prop(p, "dt_cadastr")],
+      ["Cadastro", prop(p, "dt_cadastr")]
     ]))
   }
 }))
     
+    function estiloMapBiomas(cor) {
+      return {
+        pane: 'pane-mapbiomas',
+        interactive: false,
+        pointToLayer(feature, latlng) {
+          return L.circleMarker(latlng, {
+            pane: 'pane-mapbiomas',
+            radius: 4,
+            color: cor.color,
+            fillColor: cor.color,
+            fillOpacity: cor.opacity,
+            weight: 1,
+            opacity: cor.opacity,
+            interactive: false
+          })
+        },
+        style: { color: cor.color, weight: 1.2, opacity: cor.opacity, fillOpacity: 0 }
+      }
+    }
+
     L.geoJSON(disp1,   estiloMapBiomas(coresMapBiomas.disponivel1)).addTo(map)
     L.geoJSON(ctanec,  estiloMapBiomas(coresMapBiomas.ctanec)).addTo(map)
     L.geoJSON(ctanec2, estiloMapBiomas(coresMapBiomas.ctanec2)).addTo(map)
