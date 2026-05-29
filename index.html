@@ -257,7 +257,7 @@
       #btn-painel-mobile { display: block; }
       #spinner { left: 50%; }
     }
-    
+
     #btn-reset {
       position: absolute;
       top: 80px;
@@ -347,9 +347,7 @@
       margin: 8px 0 4px;
     }
 
-    .sub-filtros .camada-item {
-      margin-bottom: 4px;
-    }
+    .sub-filtros .camada-item { margin-bottom: 4px; }
 
     .sub-filtros .camada-toggle {
       width: 22px;
@@ -364,17 +362,14 @@
     }
 
     .sub-filtros .camada-item.ativo .camada-toggle::after { left: 12px; }
-
     .sub-filtros .camada-nome { font-size: 10px; }
-    
   </style>
 </head>
 <body>
 
 <div id="mapa"></div>
-
 <button id="btn-reset" onclick="_map.setView([-4.5,-60],7)" title="Reset">↺</button>
-  
+
 <div id="spinner">
   <div id="spinner-circulo"></div>
   Carregando dados…
@@ -412,55 +407,45 @@
     </label>
 
     <div class="sub-filtros" id="sub-sicar">
-      
       <div class="sub-grupo-titulo">Tipo</div>
-      
       <label class="camada-item ativo" data-subtipo="IRU">
         <input type="checkbox" checked>
         <div class="camada-toggle"></div>
         <span class="camada-nome">IRU — Rural Privado</span>
       </label>
-  
       <label class="camada-item ativo" data-subtipo="AST">
         <input type="checkbox" checked>
         <div class="camada-toggle"></div>
         <span class="camada-nome">AST — Assentamento</span>
       </label>
-      
       <label class="camada-item ativo" data-subtipo="PCT">
         <input type="checkbox" checked>
         <div class="camada-toggle"></div>
         <span class="camada-nome">PCT — Povos e Com. Trad.</span>
       </label>
-
-    <div class="sub-grupo-titulo">Status</div>
-      
+      <div class="sub-grupo-titulo">Status</div>
       <label class="camada-item ativo" data-substatus="AT">
         <input type="checkbox" checked>
         <div class="camada-toggle"></div>
         <span class="camada-nome">AT — Ativo</span>
       </label>
-    
       <label class="camada-item ativo" data-substatus="PE">
         <input type="checkbox" checked>
         <div class="camada-toggle"></div>
         <span class="camada-nome">PE — Pendente</span>
       </label>
-  
       <label class="camada-item ativo" data-substatus="SU">
         <input type="checkbox" checked>
         <div class="camada-toggle"></div>
         <span class="camada-nome">SU — Suspenso</span>
       </label>
-  
       <label class="camada-item ativo" data-substatus="CA">
         <input type="checkbox" checked>
         <div class="camada-toggle"></div>
         <span class="camada-nome">CA — Cancelado</span>
       </label>
+    </div>
 
-</div>
-  
     <label class="camada-item ativo" data-camada="br319">
       <input type="checkbox" checked>
       <div class="camada-toggle"></div>
@@ -485,7 +470,7 @@
       <span class="camada-nome">Sítios Arqueológicos</span>
     </label>
   </div>
-  
+
   <div class="secao">
     <div class="secao-titulo">Plano de Voo — Blocos</div>
     <div id="legenda-blocos"></div>
@@ -494,6 +479,12 @@
   <div class="secao">
     <div class="secao-titulo">Florestas Públicas (CNFP)</div>
     <div id="legenda-cnfp"></div>
+    <div style="font-size:9px;color:rgba(255,255,255,0.25);margin-top:8px;line-height:1.8">
+      <span style="color:rgba(255,255,255,0.35)">Sem Destinação:</span> Gleba Arrecadada<br>
+      <span style="color:rgba(255,255,255,0.35)">Uso Sustentável:</span> FLONA, FLOTA, PA, PAE, PAE/RDS, PAE/RESEX, PDS, RDS, TI, TI/PA, TI/PAE, TI/RDS, TI/RESEX<br>
+      <span style="color:rgba(255,255,255,0.35)">Proteção Integral:</span> PAE/PARNA, PARES, PARNA, TI/PARES<br>
+      <span style="color:rgba(255,255,255,0.35)">Uso Militar:</span> Uso Militar
+    </div>
   </div>
 
   <div class="secao">
@@ -501,23 +492,20 @@
     <div class="legenda-item">
       <div class="legenda-linha" style="background:#f97316;height:3px;width:24px"></div>
       <span class="legenda-label">BR-319</span>
+    </div>
+    <div class="legenda-item">
+      <div class="legenda-cor" style="background:rgba(250,204,21,0.25);border:1.5px solid #facc15;border-radius:2px"></div>
+      <span class="legenda-label">SIGEF Brasil</span>
+    </div>
+    <div class="legenda-item">
+      <div class="legenda-cor" style="background:rgba(167,139,250,0.30);border:1.5px solid #a78bfa;border-radius:2px"></div>
+      <span class="legenda-label">Terras Indígenas</span>
+    </div>
+    <div class="legenda-item">
+      <div class="legenda-ponto-vazado" style="border-color:#f472b6"></div>
+      <span class="legenda-label">Sítios Arqueológicos</span>
+    </div>
   </div>
-    
-  <div class="legenda-item">
-    <div class="legenda-cor" style="background:rgba(250,204,21,0.25);border:1.5px solid #facc15;border-radius:2px"></div>
-    <span class="legenda-label">SIGEF Brasil</span>
-  </div>
-    
-  <div class="legenda-item">
-    <div class="legenda-cor" style="background:rgba(167,139,250,0.30);border:1.5px solid #a78bfa;border-radius:2px"></div>
-    <span class="legenda-label">Terras Indígenas</span>
-  </div>
-    
-  <div class="legenda-item">
-    <div class="legenda-ponto-vazado" style="border-color:#f472b6"></div>
-    <span class="legenda-label">Sítios Arqueológicos</span>
-  </div>
-</div>
 
   <div class="secao">
     <div class="secao-titulo">MapBiomas — Referência</div>
@@ -540,7 +528,7 @@
   </div>
 
   <div id="painel-footer">
-    Dados: SFB-CNFP, SICAR<br>
+    Dados: SFB-CNFP, SICAR, FUNAI, IPHAN, INCRA/SIGEF<br>
     Cartografia: Amazônia Revelada · 2026
   </div>
 </div>
@@ -554,24 +542,23 @@ window.addEventListener('load', function () {
     zoom: 7,
     zoomControl: true
   })
-  
+
   window._map = map
-  
   map.zoomControl.setPosition('topleft')
 
   map.createPane('pane-estados');    map.getPane('pane-estados').style.zIndex    = 200
   map.createPane('pane-mapbiomas');  map.getPane('pane-mapbiomas').style.zIndex  = 240
   map.createPane('pane-planovoo');   map.getPane('pane-planovoo').style.zIndex   = 260
   map.createPane('pane-cnfp');       map.getPane('pane-cnfp').style.zIndex       = 300
-  map.createPane('pane-sigef');  map.getPane('pane-sigef').style.zIndex  = 310
-  map.createPane('pane-ti');     map.getPane('pane-ti').style.zIndex     = 320
-  map.createPane('pane-br319');  map.getPane('pane-br319').style.zIndex  = 360
-  map.createPane('pane-sitios'); map.getPane('pane-sitios').style.zIndex = 370
+  map.createPane('pane-sigef');      map.getPane('pane-sigef').style.zIndex      = 310
+  map.createPane('pane-ti');         map.getPane('pane-ti').style.zIndex         = 320
   map.createPane('pane-sicar');      map.getPane('pane-sicar').style.zIndex      = 350
+  map.createPane('pane-br319');      map.getPane('pane-br319').style.zIndex      = 360
+  map.createPane('pane-sitios');     map.getPane('pane-sitios').style.zIndex     = 370
   map.createPane('pane-municipios'); map.getPane('pane-municipios').style.zIndex = 400
 
   map.getPane('pane-planovoo').style.pointerEvents = 'none'
-  map.getPane('pane-br319').style.pointerEvents = 'none'
+  map.getPane('pane-br319').style.pointerEvents    = 'none'
 
   L.tileLayer(
     "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
@@ -628,16 +615,15 @@ window.addEventListener('load', function () {
   })
 
   const legendaCNFP = document.getElementById("legenda-cnfp")
-    Object.entries(coresCNFP).forEach(([cat, cor]) => {
-      legendaCNFP.innerHTML += `
+  Object.entries(coresCNFP).forEach(([cat, cor]) => {
+    legendaCNFP.innerHTML += `
       <div class="legenda-item">
-      <div class="legenda-cor" style="background:${cor.fill};opacity:0.85"></div>
-      <span class="legenda-label${cat === 'SEM DESTINACAO' ? ' destaque' : ''}">${cat}</span>
+        <div class="legenda-cor" style="background:${cor.fill};opacity:0.85"></div>
+        <span class="legenda-label">${cat}</span>
       </div>`
   })
 
   const camadas = {}
-
   function registrar(key, layer) { camadas[key] = layer }
 
   function fetchGeo(url) {
@@ -682,12 +668,11 @@ window.addEventListener('load', function () {
     fetchGeo("sigef_brasil_AR.geojson"),
     fetchGeo("TI_raio_AR_corr.geojson"),
     fetchGeo("sitios_AR_raio500km.geojson"),
-  }).then(([estados, municipios, cnfp, planoVoo, sicar,
+  ]).then(([estados, municipios, cnfp, planoVoo, sicar,
             disp1, ctanec, ctanec2, disp2, br319, sigef, ti, sitios]) => {
 
     document.getElementById("spinner").style.display = "none"
 
-    // conjuntos de filtros — declarados ANTES do registrar("sicar")
     const tiposAtivos  = new Set(["IRU", "AST", "PCT"])
     const statusAtivos = new Set(["AT", "PE", "SU", "CA"])
 
@@ -699,12 +684,7 @@ window.addEventListener('load', function () {
     registrar("municipios", L.geoJSON(municipios, {
       pane: 'pane-municipios',
       interactive: false,
-      style: {
-        color: "rgba(125, 211, 252, 0.20)",
-        weight: 0.55,
-        fillOpacity: 0,
-        fillColor: "transparent"
-      }
+      style: { color: "rgba(125,211,252,0.20)", weight: 0.55, fillOpacity: 0, fillColor: "transparent" }
     }).addTo(map))
 
     registrar("cnfp", L.geoJSON(cnfp, {
@@ -734,10 +714,7 @@ window.addEventListener('load', function () {
         const raw = prop(feature.properties || {}, "id", "ID")
         const id  = Number.isInteger(+raw) && +raw > 0 ? +raw : 1
         const cor = coresBlocos[id] || coresBlocos[1]
-        return {
-          color: cor, weight: 1.3, opacity: 0.95,
-          fill: false, fillColor: "transparent", fillOpacity: 0
-        }
+        return { color: cor, weight: 1.3, opacity: 0.95, fill: false, fillColor: "transparent", fillOpacity: 0 }
       }
     }).addTo(map))
 
@@ -900,14 +877,14 @@ window.addEventListener('load', function () {
 }) // fecha window.addEventListener
 </script>
 
-  <div id="modal-boas-vindas" onclick="this.style.display='none'">
+<div id="modal-boas-vindas" onclick="this.style.display='none'">
   <div id="modal-conteudo">
     <div id="modal-projeto">Amazônia Revelada</div>
     <h2 id="modal-titulo">Plano de Voos<br>LiDAR 2026</h2>
-    <p id="modal-desc"> LiDAR - Planejamento de voos para coleta de dados ao longo da BR-319 e entorno.</p>
+    <p id="modal-desc">LiDAR - Planejamento de voos para coleta de dados ao longo da BR-319 e entorno.</p>
     <span id="modal-cta">ABRIR MAPA →</span>
   </div>
 </div>
-  
+
 </body>
 </html>
