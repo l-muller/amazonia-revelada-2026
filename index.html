@@ -281,54 +281,91 @@
       color: #fff;
     }
 
-#modal-boas-vindas {
-  position: absolute;
-  inset: 0;
-  background: rgba(5, 8, 12, 0.88);
-  z-index: 3000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  backdrop-filter: blur(4px);
-}
+    #modal-boas-vindas {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 8, 12, 0.88);
+      z-index: 3000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
 
-#modal-conteudo {
-  text-align: center;
-  max-width: 320px;
-  padding: 0 24px;
-  pointer-events: none;
-}
+    #modal-conteudo {
+      text-align: center;
+      max-width: 320px;
+      padding: 0 24px;
+      pointer-events: none;
+    }
 
-#modal-projeto {
-  font-size: 9px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
-  margin-bottom: 10px;
-}
+    #modal-projeto {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 10px;
+    }
 
-#modal-titulo {
-  font-size: 22px;
-  font-weight: 600;
-  color: #fff;
-  line-height: 1.3;
-  margin-bottom: 16px;
-}
+    #modal-titulo {
+      font-size: 22px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.3;
+      margin-bottom: 16px;
+    }
 
-#modal-desc {
-  font-size: 12px;
-  color: rgba(255,255,255,0.5);
-  line-height: 1.7;
-  margin-bottom: 28px;
-}
+    #modal-desc {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
 
-#modal-cta {
-  font-size: 11px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
-}
+    #modal-cta {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+
+    .sub-filtros {
+      display: none;
+      padding: 6px 0 2px 12px;
+      border-left: 1px solid rgba(255,255,255,0.08);
+      margin: 2px 0 6px 14px;
+    }
+
+    .sub-filtros.aberto { display: block; }
+
+    .sub-grupo-titulo {
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      margin: 8px 0 4px;
+    }
+
+    .sub-filtros .camada-item {
+      margin-bottom: 4px;
+    }
+
+    .sub-filtros .camada-toggle {
+      width: 22px;
+      height: 13px;
+    }
+
+    .sub-filtros .camada-toggle::after {
+      width: 8px;
+      height: 8px;
+      top: 2.5px;
+      left: 2.5px;
+    }
+
+    .sub-filtros .camada-item.ativo .camada-toggle::after { left: 12px; }
+
+    .sub-filtros .camada-nome { font-size: 10px; }
     
   </style>
 </head>
@@ -371,8 +408,58 @@
     <label class="camada-item desabilitado" data-camada="sicar" id="toggle-sicar">
       <input type="checkbox">
       <div class="camada-toggle"></div>
-      <span class="camada-nome">Imóveis no SICAR </span>
+      <span class="camada-nome">Imóveis no SICAR</span>
     </label>
+
+    <div class="sub-filtros" id="sub-sicar">
+      
+      <div class="sub-grupo-titulo">Tipo</div>
+      
+      <label class="camada-item ativo" data-subtipo="IRU">
+        <input type="checkbox" checked>
+        <div class="camada-toggle"></div>
+        <span class="camada-nome">IRU — Rural Privado</span>
+      </label>
+  
+      <label class="camada-item ativo" data-subtipo="AST">
+        <input type="checkbox" checked>
+        <div class="camada-toggle"></div>
+        <span class="camada-nome">AST — Assentamento</span>
+      </label>
+      
+      <label class="camada-item ativo" data-subtipo="PCT">
+        <input type="checkbox" checked>
+        <div class="camada-toggle"></div>
+        <span class="camada-nome">PCT — Povos e Com. Trad.</span>
+      </label>
+
+    <div class="sub-grupo-titulo">Status</div>
+      
+      <label class="camada-item ativo" data-substatus="AT">
+        <input type="checkbox" checked>
+        <div class="camada-toggle"></div>
+        <span class="camada-nome">AT — Ativo</span>
+      </label>
+    
+      <label class="camada-item ativo" data-substatus="PE">
+        <input type="checkbox" checked>
+        <div class="camada-toggle"></div>
+        <span class="camada-nome">PE — Pendente</span>
+      </label>
+  
+      <label class="camada-item ativo" data-substatus="SU">
+        <input type="checkbox" checked>
+        <div class="camada-toggle"></div>
+        <span class="camada-nome">SU — Suspenso</span>
+      </label>
+  
+      <label class="camada-item ativo" data-substatus="CA">
+        <input type="checkbox" checked>
+        <div class="camada-toggle"></div>
+        <span class="camada-nome">CA — Cancelado</span>
+      </label>
+
+</div>
   
     <label class="camada-item ativo" data-camada="br319">
       <input type="checkbox" checked>
@@ -656,51 +743,83 @@ window.addEventListener('load', function () {
 
     registrar("sicar", L.geoJSON(sicar, {
       pane: 'pane-sicar',
-      style: { color: "rgba(255,255,255,0.35)", weight: 0.7, fillColor: "transparent", fillOpacity: 0 },
+      style(feature) {
+        const tipo   = (feature.properties?.ind_tipo   || "").trim()
+        const status = (feature.properties?.ind_status || "").trim()
+        const cores  = { IRU: "#ffffff", AST: "#fbbf24", PCT: "#34d399" }
+        const cor    = cores[tipo] || "#ffffff"
+        return { color: cor, weight: 0.7, fillColor: cor, fillOpacity: 0.08, opacity: 0.35 }
+      },
+      filter(feature) {
+        const tipo   = (feature.properties?.ind_tipo   || "").trim()
+        const status = (feature.properties?.ind_status || "").trim()
+        return tiposAtivos.has(tipo) && statusAtivos.has(status)
+      },
       onEachFeature(feature, layer) {
         const p = feature.properties || {}
         layer.bindPopup(popupHTML("Imóvel SICAR", [
- 
           ["CAR",          prop(p, "cod_imovel")],
           ["Tipo",         prop(p, "ind_tipo")],
           ["Status",       prop(p, "ind_status")],
           ["Módulos Fis.", prop(p, "mod_fiscal")],
           ["Criação",      prop(p, "dat_criacao")],
           ["Atualização",  prop(p, "dat_atuali")],
-          ["Município", prop(p, "municipio")],
+          ["Município",    prop(p, "municipio")]
         ]))
       }
     }))
 
+// conjuntos de filtros ativos
+    const tiposAtivos  = new Set(["IRU", "AST", "PCT"])
+    const statusAtivos = new Set(["AT", "PE", "SU", "CA"])
+
+    function reaplicarSicar() {
+      if (map.hasLayer(camadas["sicar"])) {
+      map.removeLayer(camadas["sicar"])
+      camadas["sicar"].clearLayers()
+      camadas["sicar"].addData(sicar)
+      map.addLayer(camadas["sicar"])
+    }
+  }
+
+// toggle principal do SICAR
     const toggleSicar = document.getElementById("toggle-sicar")
     toggleSicar.classList.remove("desabilitado")
     toggleSicar.addEventListener("click", () => {
       const cb = toggleSicar.querySelector("input")
       cb.checked = !cb.checked
       toggleSicar.classList.toggle("ativo", cb.checked)
+      const subFiltros = document.getElementById("sub-sicar")
+      subFiltros.classList.toggle("aberto", cb.checked)
       if (cb.checked) map.addLayer(camadas["sicar"])
       else            map.removeLayer(camadas["sicar"])
     })
 
-    function estiloMapBiomas(cor) {
-      return {
-        pane: 'pane-mapbiomas',
-        interactive: false,
-        pointToLayer(feature, latlng) {
-          return L.circleMarker(latlng, {
-            pane: 'pane-mapbiomas',
-            radius: 4,
-            color: cor.color,
-            fillColor: cor.color,
-            fillOpacity: cor.opacity,
-            weight: 1,
-            opacity: cor.opacity,
-            interactive: false
-          })
-        },
-        style: { color: cor.color, weight: 1.2, opacity: cor.opacity, fillOpacity: 0 }
-      }
-    }
+// sub-toggles de tipo
+    document.querySelectorAll("[data-subtipo]").forEach(item => {
+      item.addEventListener("click", () => {
+        const cb   = item.querySelector("input")
+        const val  = item.dataset.subtipo
+        cb.checked = !cb.checked
+        item.classList.toggle("ativo", cb.checked)
+        if (cb.checked) tiposAtivos.add(val)
+        else            tiposAtivos.delete(val)
+        reaplicarSicar()
+      })
+    })
+
+// sub-toggles de status
+    document.querySelectorAll("[data-substatus]").forEach(item => {
+      item.addEventListener("click", () => {
+        const cb   = item.querySelector("input")
+        const val  = item.dataset.substatus
+        cb.checked = !cb.checked
+        item.classList.toggle("ativo", cb.checked)
+        if (cb.checked) statusAtivos.add(val)
+        else            statusAtivos.delete(val)
+        reaplicarSicar()
+      })
+    })
 
     // BR-319
 registrar("br319", L.geoJSON(br319, {
@@ -746,7 +865,7 @@ registrar("sitios", L.geoJSON(sitios, {
   pointToLayer(feature, latlng) {
     return L.circleMarker(latlng, {
       pane: 'pane-sitios',
-      radius: 5,
+      radius: 3,
       color: "#f472b6", fillColor: "#f472b6",
       fillOpacity: 0.55, weight: 1.2, opacity: 0.90
     })
