@@ -682,10 +682,14 @@ window.addEventListener('load', function () {
     fetchGeo("sigef_brasil_AR.geojson"),
     fetchGeo("TI_raio_AR_corr.geojson"),
     fetchGeo("sitios_AR_raio500km.geojson"),
-  ]).then(([estados, municipios, cnfp, planoVoo, sicar,
+  }).then(([estados, municipios, cnfp, planoVoo, sicar,
             disp1, ctanec, ctanec2, disp2, br319, sigef, ti, sitios]) => {
 
     document.getElementById("spinner").style.display = "none"
+
+    // conjuntos de filtros — declarados ANTES do registrar("sicar")
+    const tiposAtivos  = new Set(["IRU", "AST", "PCT"])
+    const statusAtivos = new Set(["AT", "PE", "SU", "CA"])
 
     registrar("estados", L.geoJSON(estados, {
       pane: 'pane-estados',
@@ -718,7 +722,7 @@ window.addEventListener('load', function () {
           ["Proteção",  prop(p, "protecao")],
           ["Classe",    prop(p, "classe")],
           ["Governo",   prop(p, "governo")]
-]))
+        ]))
       }
     }).addTo(map))
 
@@ -731,12 +735,8 @@ window.addEventListener('load', function () {
         const id  = Number.isInteger(+raw) && +raw > 0 ? +raw : 1
         const cor = coresBlocos[id] || coresBlocos[1]
         return {
-          color: cor,
-          weight: 1.3,
-          opacity: 0.95,
-          fill: false,
-          fillColor: "transparent",
-          fillOpacity: 0
+          color: cor, weight: 1.3, opacity: 0.95,
+          fill: false, fillColor: "transparent", fillOpacity: 0
         }
       }
     }).addTo(map))
@@ -744,10 +744,9 @@ window.addEventListener('load', function () {
     registrar("sicar", L.geoJSON(sicar, {
       pane: 'pane-sicar',
       style(feature) {
-        const tipo   = (feature.properties?.ind_tipo   || "").trim()
-        const status = (feature.properties?.ind_status || "").trim()
-        const cores  = { IRU: "#ffffff", AST: "#fbbf24", PCT: "#34d399" }
-        const cor    = cores[tipo] || "#ffffff"
+        const tipo  = (feature.properties?.ind_tipo || "").trim()
+        const cores = { IRU: "#ffffff", AST: "#fbbf24", PCT: "#34d399" }
+        const cor   = cores[tipo] || "#ffffff"
         return { color: cor, weight: 0.7, fillColor: cor, fillOpacity: 0.08, opacity: 0.35 }
       },
       filter(feature) {
@@ -769,37 +768,30 @@ window.addEventListener('load', function () {
       }
     }))
 
-// conjuntos de filtros ativos
-    const tiposAtivos  = new Set(["IRU", "AST", "PCT"])
-    const statusAtivos = new Set(["AT", "PE", "SU", "CA"])
-
     function reaplicarSicar() {
       if (map.hasLayer(camadas["sicar"])) {
-      map.removeLayer(camadas["sicar"])
-      camadas["sicar"].clearLayers()
-      camadas["sicar"].addData(sicar)
-      map.addLayer(camadas["sicar"])
+        map.removeLayer(camadas["sicar"])
+        camadas["sicar"].clearLayers()
+        camadas["sicar"].addData(sicar)
+        map.addLayer(camadas["sicar"])
+      }
     }
-  }
 
-// toggle principal do SICAR
     const toggleSicar = document.getElementById("toggle-sicar")
     toggleSicar.classList.remove("desabilitado")
     toggleSicar.addEventListener("click", () => {
       const cb = toggleSicar.querySelector("input")
       cb.checked = !cb.checked
       toggleSicar.classList.toggle("ativo", cb.checked)
-      const subFiltros = document.getElementById("sub-sicar")
-      subFiltros.classList.toggle("aberto", cb.checked)
+      document.getElementById("sub-sicar").classList.toggle("aberto", cb.checked)
       if (cb.checked) map.addLayer(camadas["sicar"])
       else            map.removeLayer(camadas["sicar"])
     })
 
-// sub-toggles de tipo
     document.querySelectorAll("[data-subtipo]").forEach(item => {
       item.addEventListener("click", () => {
-        const cb   = item.querySelector("input")
-        const val  = item.dataset.subtipo
+        const cb  = item.querySelector("input")
+        const val = item.dataset.subtipo
         cb.checked = !cb.checked
         item.classList.toggle("ativo", cb.checked)
         if (cb.checked) tiposAtivos.add(val)
@@ -808,11 +800,10 @@ window.addEventListener('load', function () {
       })
     })
 
-// sub-toggles de status
     document.querySelectorAll("[data-substatus]").forEach(item => {
       item.addEventListener("click", () => {
-        const cb   = item.querySelector("input")
-        const val  = item.dataset.substatus
+        const cb  = item.querySelector("input")
+        const val = item.dataset.substatus
         cb.checked = !cb.checked
         item.classList.toggle("ativo", cb.checked)
         if (cb.checked) statusAtivos.add(val)
@@ -821,65 +812,61 @@ window.addEventListener('load', function () {
       })
     })
 
-    // BR-319
-registrar("br319", L.geoJSON(br319, {
-  pane: 'pane-br319',
-  interactive: false,
-  style: { color: "#f97316", weight: 2.5, opacity: 0.90, fillOpacity: 0 }
-}).addTo(map))
+    registrar("br319", L.geoJSON(br319, {
+      pane: 'pane-br319',
+      interactive: false,
+      style: { color: "#f97316", weight: 2.5, opacity: 0.90, fillOpacity: 0 }
+    }).addTo(map))
 
-// SIGEF
-registrar("sigef", L.geoJSON(sigef, {
-  pane: 'pane-sigef',
-  style: { color: "#facc15", weight: 0.8, opacity: 0.75, fillColor: "#facc15", fillOpacity: 0.12 },
-  onEachFeature(feature, layer) {
-    const p = feature.properties || {}
-    layer.bindPopup(popupHTML("SIGEF — Imóvel", [
-      ["Nome",      prop(p, "nome_area")],
-      ["Município", prop(p, "municipio_")],
-      ["Situação",        prop(p, "situacao_i")],
-      ["Status", prop(p, "status")]
-    ]))
-  }
-}))
+    registrar("sigef", L.geoJSON(sigef, {
+      pane: 'pane-sigef',
+      style: { color: "#facc15", weight: 0.8, opacity: 0.75, fillColor: "#facc15", fillOpacity: 0.12 },
+      onEachFeature(feature, layer) {
+        const p = feature.properties || {}
+        layer.bindPopup(popupHTML("SIGEF — Imóvel", [
+          ["Nome",      prop(p, "nome_area")],
+          ["Município", prop(p, "municipio_")],
+          ["Situação",  prop(p, "situacao_i")],
+          ["Status",    prop(p, "status")]
+        ]))
+      }
+    }))
 
-// Terras Indígenas
-registrar("ti", L.geoJSON(ti, {
-  pane: 'pane-ti',
-  style: { color: "#a78bfa", weight: 1.2, opacity: 0.85, fillColor: "#a78bfa", fillOpacity: 0.20 },
-  onEachFeature(feature, layer) {
-    const p = feature.properties || {}
-    layer.bindPopup(popupHTML("Terra Indígena", [
-      ["Nome",       prop(p, "terrai_nom")],
-      ["Etnia",      prop(p, "etnia_nome")],
-      ["Fase",       prop(p, "fase_ti")],
-      ["Município", prop(p, "municipio_")],
-      ["Unid. Adm.",         prop(p, "undadm_sig")]
-    ]))
-  }
-}))
+    registrar("ti", L.geoJSON(ti, {
+      pane: 'pane-ti',
+      style: { color: "#a78bfa", weight: 1.2, opacity: 0.85, fillColor: "#a78bfa", fillOpacity: 0.20 },
+      onEachFeature(feature, layer) {
+        const p = feature.properties || {}
+        layer.bindPopup(popupHTML("Terra Indígena", [
+          ["Nome",       prop(p, "terrai_nom")],
+          ["Etnia",      prop(p, "etnia_nome")],
+          ["Fase",       prop(p, "fase_ti")],
+          ["Município",  prop(p, "municipio_")],
+          ["Unid. Adm.", prop(p, "undadm_sig")]
+        ]))
+      }
+    }))
 
-// Sítios Arqueológicos
-registrar("sitios", L.geoJSON(sitios, {
-  pane: 'pane-sitios',
-  pointToLayer(feature, latlng) {
-    return L.circleMarker(latlng, {
+    registrar("sitios", L.geoJSON(sitios, {
       pane: 'pane-sitios',
-      radius: 3,
-      color: "#f472b6", fillColor: "#f472b6",
-      fillOpacity: 0.55, weight: 1.2, opacity: 0.90
-    })
-  },
-  onEachFeature(feature, layer) {
-    const p = feature.properties || {}
-    layer.bindPopup(popupHTML("Sítio Arqueológico", [
-      ["Nome",      prop(p, "identifica")],
-      ["Cód, IPHAN",    prop(p, "co_iphan")],
-      ["Cadastro", prop(p, "dt_cadastr")]
-    ]))
-  }
-}))
-    
+      pointToLayer(feature, latlng) {
+        return L.circleMarker(latlng, {
+          pane: 'pane-sitios',
+          radius: 3,
+          color: "#f472b6", fillColor: "#f472b6",
+          fillOpacity: 0.55, weight: 1.2, opacity: 0.90
+        })
+      },
+      onEachFeature(feature, layer) {
+        const p = feature.properties || {}
+        layer.bindPopup(popupHTML("Sítio Arqueológico", [
+          ["Nome",       prop(p, "identifica")],
+          ["Cód. IPHAN", prop(p, "co_iphan")],
+          ["Cadastro",   prop(p, "dt_cadastr")]
+        ]))
+      }
+    }))
+
     function estiloMapBiomas(cor) {
       return {
         pane: 'pane-mapbiomas',
@@ -888,12 +875,9 @@ registrar("sitios", L.geoJSON(sitios, {
           return L.circleMarker(latlng, {
             pane: 'pane-mapbiomas',
             radius: 4,
-            color: cor.color,
-            fillColor: cor.color,
-            fillOpacity: cor.opacity,
-            weight: 1,
-            opacity: cor.opacity,
-            interactive: false
+            color: cor.color, fillColor: cor.color,
+            fillOpacity: cor.opacity, weight: 1,
+            opacity: cor.opacity, interactive: false
           })
         },
         style: { color: cor.color, weight: 1.2, opacity: cor.opacity, fillOpacity: 0 }
