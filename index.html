@@ -412,14 +412,14 @@
   <div class="secao">
     <div class="secao-titulo">Camadas e Legenda</div>
 
-    <label class="camada-item ativo" data-camada="planovoo">
+    <label class="camada-item" data-camada="planovoo">
       <input type="checkbox" checked>
       <div class="camada-toggle"></div>
       <span class="camada-nome">Plano de Voo | Blocos 1 a 4</span>
     </label>
 
     <label class="camada-item ativo" data-camada="cnfp">
-      <input type="checkbox" checked>
+      <input type="checkbox">
       <div class="camada-toggle"></div>
       <span class="camada-nome">Florestas Públicas</span>
     </label>
@@ -872,7 +872,7 @@ window.addEventListener('load', function () {
           ["Governo",   prop(p, "governo")]
         ]))
       }
-    }).addTo(map))
+    })
 
     registrar("planovoo", L.geoJSON(planoVoo, {
       pane: 'pane-planovoo',
