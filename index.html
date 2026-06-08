@@ -364,7 +364,6 @@
     .sub-filtros .camada-item.ativo .camada-toggle::after { left: 12px; }
     .sub-filtros .camada-nome { font-size: 10px; }
 
-    /* SVG hatch pattern for entrega layers */
     .legenda-hatch {
       width: 14px;
       height: 14px;
@@ -378,21 +377,6 @@
 
 <div id="mapa"></div>
 <button id="btn-reset" onclick="_map.setView([-4.5,-60],7)" title="Reset">↺</button>
-
-<!-- SVG defs for hatch patterns (hidden, referenced by Leaflet canvas) -->
-<svg width="0" height="0" style="position:absolute">
-  <defs>
-    <pattern id="hatch-e01" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
-      <line x1="0" y1="0" x2="0" y2="6" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.55"/>
-    </pattern>
-    <pattern id="hatch-e02" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
-      <line x1="0" y1="0" x2="0" y2="6" stroke="#34d399" stroke-width="1.2" stroke-opacity="0.55"/>
-    </pattern>
-    <pattern id="hatch-e03" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
-      <line x1="0" y1="0" x2="0" y2="6" stroke="#fbbf24" stroke-width="1.2" stroke-opacity="0.55"/>
-    </pattern>
-  </defs>
-</svg>
 
 <div id="spinner">
   <div id="spinner-circulo"></div>
@@ -412,13 +396,14 @@
   <div class="secao">
     <div class="secao-titulo">Camadas e Legenda</div>
 
-    <label class="camada-item" data-camada="planovoo">
+    <label class="camada-item ativo" data-camada="planovoo">
       <input type="checkbox" checked>
       <div class="camada-toggle"></div>
       <span class="camada-nome">Plano de Voo | Blocos 1 a 4</span>
     </label>
 
-    <label class="camada-item ativo" data-camada="cnfp">
+    <!-- CORRIGIDO: sem 'ativo' na classe e sem 'checked' no input — inicia desligada -->
+    <label class="camada-item" data-camada="cnfp">
       <input type="checkbox">
       <div class="camada-toggle"></div>
       <span class="camada-nome">Florestas Públicas</span>
@@ -499,7 +484,6 @@
     <div class="secao-titulo">Plano de Voo — Blocos</div>
     <div id="legenda-blocos"></div>
 
-    <!-- Sub-seção: Entregas (voos executados) -->
     <div style="margin-top:10px">
       <div class="sub-grupo-titulo" style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:6px">Voos Executados</div>
       <div class="legenda-item">
@@ -557,7 +541,6 @@
     <div style="font-size:9px;color:rgba(255,255,255,0.25);margin-bottom:6px;line-height:1.6">
       Tom = Tipo crítico &nbsp;·&nbsp; Opacidade = Status
     </div>
-    <!-- Tipo -->
     <div class="sub-grupo-titulo" style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:4px">Tipo</div>
     <div class="legenda-item">
       <div class="legenda-cor" style="background:rgba(239,68,68,0.55);border:1.5px solid #ef4444;"></div>
@@ -571,7 +554,6 @@
       <div class="legenda-cor" style="background:rgba(234,179,8,0.40);border:1.5px solid #eab308;"></div>
       <span class="legenda-label">PCT — Povos e Com. Trad.</span>
     </div>
-    <!-- Status -->
     <div class="sub-grupo-titulo" style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin:8px 0 4px">Status (opacidade)</div>
     <div class="legenda-item">
       <div style="width:40px;height:10px;border-radius:2px;background:linear-gradient(to right,rgba(239,68,68,0.70),rgba(239,68,68,0.12));flex-shrink:0"></div>
@@ -698,14 +680,12 @@ window.addEventListener('load', function () {
     disponivel2: { color: "#6ee7b7", opacity: 0.55 }
   }
 
-  // ── SICAR: cor base por tipo × opacidade por status ──────────────────────
-  // Tipo: IRU=vermelho (mais crítico) → AST=laranja → PCT=amarelo
+  // SICAR: cor base por tipo x opacidade por status
   const sicarCorBase = {
     IRU: { stroke: "#ef4444", fill: "#ef4444" },
     AST: { stroke: "#f97316", fill: "#f97316" },
     PCT: { stroke: "#eab308", fill: "#eab308" }
   }
-  // Status: AT (mais opaco) → PE → SU → CA (mais transparente)
   const sicarOpacidade = {
     AT: { stroke: 0.85, fill: 0.22 },
     PE: { stroke: 0.60, fill: 0.13 },
@@ -716,7 +696,7 @@ window.addEventListener('load', function () {
   function sicarEstilo(feature) {
     const tipo   = (feature.properties?.ind_tipo   || "IRU").trim()
     const status = (feature.properties?.ind_status || "AT").trim()
-    const cor    = sicarCorBase[tipo]   || sicarCorBase.IRU
+    const cor    = sicarCorBase[tipo]     || sicarCorBase.IRU
     const opa    = sicarOpacidade[status] || sicarOpacidade.CA
     return {
       color:       cor.stroke,
@@ -727,11 +707,11 @@ window.addEventListener('load', function () {
     }
   }
 
-  // ── Cores das camadas de Entrega ─────────────────────────────────────────
+  // Cores das camadas de Entrega
   const coresEntregas = {
-    "entrega01": { stroke: "#38bdf8", strokeOpacity: 0.80, fillOpacity: 0.12 },
-    "entrega02": { stroke: "#34d399", strokeOpacity: 0.80, fillOpacity: 0.12 },
-    "entrega03": { stroke: "#fbbf24", strokeOpacity: 0.80, fillOpacity: 0.12 }
+    "entrega01": { stroke: "#38bdf8", strokeOpacity: 0.80, fillOpacity: 0.06 },
+    "entrega02": { stroke: "#34d399", strokeOpacity: 0.80, fillOpacity: 0.06 },
+    "entrega03": { stroke: "#fbbf24", strokeOpacity: 0.80, fillOpacity: 0.06 }
   }
 
   const legendaBlocos = document.getElementById("legenda-blocos")
@@ -770,36 +750,32 @@ window.addEventListener('load', function () {
       })
   }
 
-  // ── Função auxiliar: criar camada de entrega com padrão rasurado ──────────
-  // Leaflet canvas não suporta SVG patterns nativamente, então simulamos
-  // com fill semi-transparente + dashArray na borda para dar efeito de rasura.
+  // CORRIGIDO: borda tracejada + fill quase zero = leitura de "voo executado"
   function criarCamadaEntrega(geoData, cfg, titulo) {
     return L.geoJSON(geoData, {
       pane: 'pane-entregas',
       style: function() {
         return {
           color:       cfg.stroke,
-          weight:      1.4,
+          weight:      1.8,
           opacity:     cfg.strokeOpacity,
           fillColor:   cfg.stroke,
           fillOpacity: cfg.fillOpacity,
-          dashArray:   null
+          dashArray:   "5, 4"
         }
       },
       onEachFeature(feature, layer) {
-        const p = feature.properties || {}
+        const p    = feature.properties || {}
         const desc = prop(p, "DESCRIPTION", "description", "desc")
         layer.bindPopup(popupHTML(titulo, [
           ["Descrição", desc],
           ["ID",        prop(p, "id", "ID", "objectid")]
         ]))
-
-        // Ao passar o mouse: realça a borda
         layer.on('mouseover', function() {
-          this.setStyle({ weight: 2.2, opacity: 1, fillOpacity: cfg.fillOpacity * 1.8 })
+          this.setStyle({ weight: 2.5, opacity: 1, fillOpacity: cfg.fillOpacity * 2.5, dashArray: "5, 4" })
         })
         layer.on('mouseout', function() {
-          this.setStyle({ weight: 1.4, opacity: cfg.strokeOpacity, fillOpacity: cfg.fillOpacity })
+          this.setStyle({ weight: 1.8, opacity: cfg.strokeOpacity, fillOpacity: cfg.fillOpacity, dashArray: "5, 4" })
         })
       }
     })
@@ -855,6 +831,7 @@ window.addEventListener('load', function () {
       style: { color: "rgba(125,211,252,0.20)", weight: 0.55, fillOpacity: 0, fillColor: "transparent" }
     }).addTo(map))
 
+    // CORRIGIDO: sem .addTo(map) — inicia desligada, coerente com o toggle no HTML
     registrar("cnfp", L.geoJSON(cnfp, {
       pane: 'pane-cnfp',
       style(feature) {
@@ -872,7 +849,7 @@ window.addEventListener('load', function () {
           ["Governo",   prop(p, "governo")]
         ]))
       }
-    })
+    }))
 
     registrar("planovoo", L.geoJSON(planoVoo, {
       pane: 'pane-planovoo',
@@ -886,7 +863,7 @@ window.addEventListener('load', function () {
       }
     }).addTo(map))
 
-    // ── Camadas de Entrega (voos executados) ─────────────────────────────
+    // Camadas de Entrega (voos executados) — tracejado, sempre visíveis
     criarCamadaEntrega(entrega01, coresEntregas.entrega01, "Entrega 01").addTo(map)
     criarCamadaEntrega(entrega02, coresEntregas.entrega02, "Entrega 02").addTo(map)
     criarCamadaEntrega(entrega03, coresEntregas.entrega03, "Entrega 03").addTo(map)
