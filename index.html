@@ -568,7 +568,7 @@
       <span class="legenda-label">BR-319</span>
     </div>
     <div class="legenda-item">
-      <div class="legenda-cor" style="background:rgba(250,204,21,0.25);border:1.5px solid #154efa;border-radius:2px"></div>
+      <div class="legenda-cor" style="background:rgba(21, 78, 250, 0.35);border:1.5px solid #154efa;border-radius:2px"></div>
       <span class="legenda-label">SIGEF Brasil</span>
     </div>
     <div class="legenda-item">
@@ -942,7 +942,7 @@ window.addEventListener('load', function () {
 
     registrar("sigef", L.geoJSON(sigef, {
       pane: 'pane-sigef',
-      style: { color: "#facc15", weight: 0.8, opacity: 0.75, fillColor: "#154efa", fillOpacity: 0.12 },
+      style: { color: "#154efa", weight: 0.8, opacity: 0.75, fillColor: "#154efa", fillOpacity: 0.22 },
       onEachFeature(feature, layer) {
         const p = feature.properties || {}
         layer.bindPopup(popupHTML("SIGEF — Imóvel", [
