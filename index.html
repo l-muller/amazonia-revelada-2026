@@ -363,12 +363,36 @@
 
     .sub-filtros .camada-item.ativo .camada-toggle::after { left: 12px; }
     .sub-filtros .camada-nome { font-size: 10px; }
+
+    /* SVG hatch pattern for entrega layers */
+    .legenda-hatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
 
 <div id="mapa"></div>
 <button id="btn-reset" onclick="_map.setView([-4.5,-60],7)" title="Reset">↺</button>
+
+<!-- SVG defs for hatch patterns (hidden, referenced by Leaflet canvas) -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <pattern id="hatch-e01" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.55"/>
+    </pattern>
+    <pattern id="hatch-e02" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#34d399" stroke-width="1.2" stroke-opacity="0.55"/>
+    </pattern>
+    <pattern id="hatch-e03" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#fbbf24" stroke-width="1.2" stroke-opacity="0.55"/>
+    </pattern>
+  </defs>
+</svg>
 
 <div id="spinner">
   <div id="spinner-circulo"></div>
@@ -474,6 +498,47 @@
   <div class="secao">
     <div class="secao-titulo">Plano de Voo — Blocos</div>
     <div id="legenda-blocos"></div>
+
+    <!-- Sub-seção: Entregas (voos executados) -->
+    <div style="margin-top:10px">
+      <div class="sub-grupo-titulo" style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:6px">Voos Executados</div>
+      <div class="legenda-item">
+        <svg class="legenda-hatch" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="lh-e01" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="4" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.7"/>
+            </pattern>
+          </defs>
+          <rect width="14" height="14" fill="url(#lh-e01)" rx="1"/>
+          <rect width="14" height="14" fill="none" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.75" rx="1"/>
+        </svg>
+        <span class="legenda-label">Entrega 01</span>
+      </div>
+      <div class="legenda-item">
+        <svg class="legenda-hatch" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="lh-e02" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="4" stroke="#34d399" stroke-width="1" stroke-opacity="0.7"/>
+            </pattern>
+          </defs>
+          <rect width="14" height="14" fill="url(#lh-e02)" rx="1"/>
+          <rect width="14" height="14" fill="none" stroke="#34d399" stroke-width="1.2" stroke-opacity="0.75" rx="1"/>
+        </svg>
+        <span class="legenda-label">Entrega 02</span>
+      </div>
+      <div class="legenda-item">
+        <svg class="legenda-hatch" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="lh-e03" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="4" stroke="#fbbf24" stroke-width="1" stroke-opacity="0.7"/>
+            </pattern>
+          </defs>
+          <rect width="14" height="14" fill="url(#lh-e03)" rx="1"/>
+          <rect width="14" height="14" fill="none" stroke="#fbbf24" stroke-width="1.2" stroke-opacity="0.75" rx="1"/>
+        </svg>
+        <span class="legenda-label">Entrega 03</span>
+      </div>
+    </div>
   </div>
 
   <div class="secao">
@@ -484,6 +549,33 @@
       <span style="color:rgba(255,255,255,0.35)">Uso Sustentável:</span> FLONA, FLOTA, PA, PAE, PAE/RDS, PAE/RESEX, PDS, RDS, TI, TI/PA, TI/PAE, TI/RDS, TI/RESEX<br>
       <span style="color:rgba(255,255,255,0.35)">Proteção Integral:</span> PAE/PARNA, PARES, PARNA, TI/PARES<br>
       <span style="color:rgba(255,255,255,0.35)">Uso Militar:</span> Uso Militar
+    </div>
+  </div>
+
+  <div class="secao">
+    <div class="secao-titulo">SICAR — Hierarquia</div>
+    <div style="font-size:9px;color:rgba(255,255,255,0.25);margin-bottom:6px;line-height:1.6">
+      Tom = Tipo crítico &nbsp;·&nbsp; Opacidade = Status
+    </div>
+    <!-- Tipo -->
+    <div class="sub-grupo-titulo" style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:4px">Tipo</div>
+    <div class="legenda-item">
+      <div class="legenda-cor" style="background:rgba(239,68,68,0.55);border:1.5px solid #ef4444;"></div>
+      <span class="legenda-label">IRU — Rural Privado (crítico)</span>
+    </div>
+    <div class="legenda-item">
+      <div class="legenda-cor" style="background:rgba(249,115,22,0.45);border:1.5px solid #f97316;"></div>
+      <span class="legenda-label">AST — Assentamento</span>
+    </div>
+    <div class="legenda-item">
+      <div class="legenda-cor" style="background:rgba(234,179,8,0.40);border:1.5px solid #eab308;"></div>
+      <span class="legenda-label">PCT — Povos e Com. Trad.</span>
+    </div>
+    <!-- Status -->
+    <div class="sub-grupo-titulo" style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin:8px 0 4px">Status (opacidade)</div>
+    <div class="legenda-item">
+      <div style="width:40px;height:10px;border-radius:2px;background:linear-gradient(to right,rgba(239,68,68,0.70),rgba(239,68,68,0.12));flex-shrink:0"></div>
+      <span class="legenda-label">AT → CA (ativo a cancelado)</span>
     </div>
   </div>
 
@@ -549,6 +641,7 @@ window.addEventListener('load', function () {
   map.createPane('pane-estados');    map.getPane('pane-estados').style.zIndex    = 200
   map.createPane('pane-mapbiomas');  map.getPane('pane-mapbiomas').style.zIndex  = 240
   map.createPane('pane-planovoo');   map.getPane('pane-planovoo').style.zIndex   = 260
+  map.createPane('pane-entregas');   map.getPane('pane-entregas').style.zIndex   = 270
   map.createPane('pane-cnfp');       map.getPane('pane-cnfp').style.zIndex       = 300
   map.createPane('pane-sigef');      map.getPane('pane-sigef').style.zIndex      = 310
   map.createPane('pane-ti');         map.getPane('pane-ti').style.zIndex         = 320
@@ -605,6 +698,42 @@ window.addEventListener('load', function () {
     disponivel2: { color: "#6ee7b7", opacity: 0.55 }
   }
 
+  // ── SICAR: cor base por tipo × opacidade por status ──────────────────────
+  // Tipo: IRU=vermelho (mais crítico) → AST=laranja → PCT=amarelo
+  const sicarCorBase = {
+    IRU: { stroke: "#ef4444", fill: "#ef4444" },
+    AST: { stroke: "#f97316", fill: "#f97316" },
+    PCT: { stroke: "#eab308", fill: "#eab308" }
+  }
+  // Status: AT (mais opaco) → PE → SU → CA (mais transparente)
+  const sicarOpacidade = {
+    AT: { stroke: 0.85, fill: 0.22 },
+    PE: { stroke: 0.60, fill: 0.13 },
+    SU: { stroke: 0.38, fill: 0.07 },
+    CA: { stroke: 0.20, fill: 0.04 }
+  }
+
+  function sicarEstilo(feature) {
+    const tipo   = (feature.properties?.ind_tipo   || "IRU").trim()
+    const status = (feature.properties?.ind_status || "AT").trim()
+    const cor    = sicarCorBase[tipo]   || sicarCorBase.IRU
+    const opa    = sicarOpacidade[status] || sicarOpacidade.CA
+    return {
+      color:       cor.stroke,
+      weight:      0.9,
+      opacity:     opa.stroke,
+      fillColor:   cor.fill,
+      fillOpacity: opa.fill
+    }
+  }
+
+  // ── Cores das camadas de Entrega ─────────────────────────────────────────
+  const coresEntregas = {
+    "entrega01": { stroke: "#38bdf8", strokeOpacity: 0.80, fillOpacity: 0.12 },
+    "entrega02": { stroke: "#34d399", strokeOpacity: 0.80, fillOpacity: 0.12 },
+    "entrega03": { stroke: "#fbbf24", strokeOpacity: 0.80, fillOpacity: 0.12 }
+  }
+
   const legendaBlocos = document.getElementById("legenda-blocos")
   Object.entries(coresBlocos).forEach(([id, cor]) => {
     legendaBlocos.innerHTML += `
@@ -641,6 +770,41 @@ window.addEventListener('load', function () {
       })
   }
 
+  // ── Função auxiliar: criar camada de entrega com padrão rasurado ──────────
+  // Leaflet canvas não suporta SVG patterns nativamente, então simulamos
+  // com fill semi-transparente + dashArray na borda para dar efeito de rasura.
+  function criarCamadaEntrega(geoData, cfg, titulo) {
+    return L.geoJSON(geoData, {
+      pane: 'pane-entregas',
+      style: function() {
+        return {
+          color:       cfg.stroke,
+          weight:      1.4,
+          opacity:     cfg.strokeOpacity,
+          fillColor:   cfg.stroke,
+          fillOpacity: cfg.fillOpacity,
+          dashArray:   null
+        }
+      },
+      onEachFeature(feature, layer) {
+        const p = feature.properties || {}
+        const desc = prop(p, "DESCRIPTION", "description", "desc")
+        layer.bindPopup(popupHTML(titulo, [
+          ["Descrição", desc],
+          ["ID",        prop(p, "id", "ID", "objectid")]
+        ]))
+
+        // Ao passar o mouse: realça a borda
+        layer.on('mouseover', function() {
+          this.setStyle({ weight: 2.2, opacity: 1, fillOpacity: cfg.fillOpacity * 1.8 })
+        })
+        layer.on('mouseout', function() {
+          this.setStyle({ weight: 1.4, opacity: cfg.strokeOpacity, fillOpacity: cfg.fillOpacity })
+        })
+      }
+    })
+  }
+
   document.querySelectorAll(".camada-item:not(.desabilitado):not([data-subtipo]):not([data-substatus])").forEach(item => {
     item.addEventListener("click", () => {
       const key = item.dataset.camada
@@ -668,8 +832,12 @@ window.addEventListener('load', function () {
     fetchGeo("sigef_brasil_AR.geojson"),
     fetchGeo("TI_raio_AR_corr.geojson"),
     fetchGeo("sitios_AR_raio500km.geojson"),
+    fetchGeo("Entrega_01_limite_ficheiros.geojson"),
+    fetchGeo("Entrega_02_limite_ficheiros.geojson"),
+    fetchGeo("Entrega_03_limite_ficheiros.geojson"),
   ]).then(([estados, municipios, cnfp, planoVoo, sicar,
-            disp1, ctanec, ctanec2, disp2, br319, sigef, ti, sitios]) => {
+            disp1, ctanec, ctanec2, disp2, br319, sigef, ti, sitios,
+            entrega01, entrega02, entrega03]) => {
 
     document.getElementById("spinner").style.display = "none"
 
@@ -718,14 +886,14 @@ window.addEventListener('load', function () {
       }
     }).addTo(map))
 
+    // ── Camadas de Entrega (voos executados) ─────────────────────────────
+    criarCamadaEntrega(entrega01, coresEntregas.entrega01, "Entrega 01").addTo(map)
+    criarCamadaEntrega(entrega02, coresEntregas.entrega02, "Entrega 02").addTo(map)
+    criarCamadaEntrega(entrega03, coresEntregas.entrega03, "Entrega 03").addTo(map)
+
     registrar("sicar", L.geoJSON(sicar, {
       pane: 'pane-sicar',
-      style(feature) {
-        const tipo  = (feature.properties?.ind_tipo || "").trim()
-        const cores = { IRU: "#ffffff", AST: "#fbbf24", PCT: "#34d399" }
-        const cor   = cores[tipo] || "#ffffff"
-        return { color: cor, weight: 0.7, fillColor: cor, fillOpacity: 0.08, opacity: 0.35 }
-      },
+      style: sicarEstilo,
       filter(feature) {
         const tipo   = (feature.properties?.ind_tipo   || "").trim()
         const status = (feature.properties?.ind_status || "").trim()
