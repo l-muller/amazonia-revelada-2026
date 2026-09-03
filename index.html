@@ -635,10 +635,10 @@ window.addEventListener('load', function () {
   map.getPane('pane-planovoo').style.pointerEvents = 'none'
   map.getPane('pane-br319').style.pointerEvents    = 'none'
 
-  L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-    { attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: "abcd", maxZoom: 20 }
-  ).addTo(map)
+L.tileLayer(
+  "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+  { attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ', maxZoom: 16 }
+).addTo(map)
 
   function prop(props, ...keys) {
     if (!props || typeof props !== 'object') return null
@@ -712,6 +712,7 @@ window.addEventListener('load', function () {
     "entrega01": { stroke: "#38bdf8", strokeOpacity: 0.80, fillOpacity: 0.06 },
     "entrega02": { stroke: "#34d399", strokeOpacity: 0.80, fillOpacity: 0.06 },
     "entrega03": { stroke: "#fbbf24", strokeOpacity: 0.80, fillOpacity: 0.06 }
+    "entrega04": { stroke: "#c084fc", strokeOpacity: 0.80, fillOpacity: 0.06 }
   }
 
   const legendaBlocos = document.getElementById("legenda-blocos")
@@ -811,9 +812,10 @@ window.addEventListener('load', function () {
     fetchGeo("Entrega_01_limite_ficheiros.geojson"),
     fetchGeo("Entrega_02_limite_ficheiros.geojson"),
     fetchGeo("Entrega_03_limite_ficheiros.geojson"),
+    fetchGeo("ENTREGA_04-09_LIMITE_FICHEIROS.geojson"),
   ]).then(([estados, municipios, cnfp, planoVoo, sicar,
             disp1, ctanec, ctanec2, disp2, br319, sigef, ti, sitios,
-            entrega01, entrega02, entrega03]) => {
+            entrega01, entrega02, entrega03, entrega04]) => {
 
     document.getElementById("spinner").style.display = "none"
 
@@ -867,6 +869,7 @@ window.addEventListener('load', function () {
     criarCamadaEntrega(entrega01, coresEntregas.entrega01, "Entrega 01").addTo(map)
     criarCamadaEntrega(entrega02, coresEntregas.entrega02, "Entrega 02").addTo(map)
     criarCamadaEntrega(entrega03, coresEntregas.entrega03, "Entrega 03").addTo(map)
+    criarCamadaEntrega(entrega04, coresEntregas.entrega04, "Entrega 04").addTo(map)
 
     registrar("sicar", L.geoJSON(sicar, {
       pane: 'pane-sicar',
