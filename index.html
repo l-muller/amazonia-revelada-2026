@@ -6,6 +6,9 @@
   <title>Plano de Voos 2026 — Amazônia Revelada</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+  <script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="dashboard.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1049,6 +1052,30 @@ L.tileLayer(
     L.geoJSON(disp2,   estiloMapBiomas(coresMapBiomas.disponivel2)).addTo(map)
 
     L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map)
+
+        if (window.iniciarDashboard) {
+      window.iniciarDashboard({
+        planoVoo, cnfp, ti, sicar,
+        entregas: [
+          { nome: "Entrega 01", geojson: entrega01, cor: coresEntregas.entrega01.stroke },
+          { nome: "Entrega 02", geojson: entrega02, cor: coresEntregas.entrega02.stroke },
+          { nome: "Entrega 03", geojson: entrega03, cor: coresEntregas.entrega03.stroke },
+          { nome: "Entrega 04", geojson: entrega04, cor: coresEntregas.entrega04.stroke },
+          { nome: "Entrega 05", geojson: entrega05, cor: coresEntregas.entrega05.stroke },
+          { nome: "Entrega 06", geojson: entrega06, cor: coresEntregas.entrega06.stroke },
+          { nome: "Entrega 07", geojson: entrega07, cor: coresEntregas.entrega07.stroke },
+          { nome: "Entrega 08", geojson: entrega08, cor: coresEntregas.entrega08.stroke },
+          { nome: "Entrega 09", geojson: entrega09, cor: coresEntregas.entrega09.stroke }
+        ],
+        coresCNFP,
+        coresBlocos,
+        sicarCorBase,
+        getFiltrosSicarAtivos: () => ({
+          tipos: Array.from(tiposAtivos),
+          status: Array.from(statusAtivos)
+        })
+      })
+    }
 
   }).catch(err => {
     console.error("Erro crítico ao carregar dados:", err)
