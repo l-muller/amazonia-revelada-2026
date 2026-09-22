@@ -486,42 +486,12 @@
 
     <div style="margin-top:10px">
       <div class="sub-grupo-titulo" style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:6px">Voos Executados</div>
-      <div class="legenda-item">
-        <svg class="legenda-hatch" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="lh-e01" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
-              <line x1="0" y1="0" x2="0" y2="4" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.7"/>
-            </pattern>
-          </defs>
-          <rect width="14" height="14" fill="url(#lh-e01)" rx="1"/>
-          <rect width="14" height="14" fill="none" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.75" rx="1"/>
-        </svg>
-        <span class="legenda-label">Entrega 01</span>
+      <div id="legenda-entregas-gradiente" style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <span style="font-size:9px;color:rgba(255,255,255,0.35)">01</span>
+        <div id="barra-gradiente-entregas" style="flex:1;height:6px;border-radius:3px"></div>
+        <span style="font-size:9px;color:rgba(255,255,255,0.35)" id="label-ultima-entrega">09</span>
       </div>
-      <div class="legenda-item">
-        <svg class="legenda-hatch" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="lh-e02" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
-              <line x1="0" y1="0" x2="0" y2="4" stroke="#34d399" stroke-width="1" stroke-opacity="0.7"/>
-            </pattern>
-          </defs>
-          <rect width="14" height="14" fill="url(#lh-e02)" rx="1"/>
-          <rect width="14" height="14" fill="none" stroke="#34d399" stroke-width="1.2" stroke-opacity="0.75" rx="1"/>
-        </svg>
-        <span class="legenda-label">Entrega 02</span>
-      </div>
-      <div class="legenda-item">
-        <svg class="legenda-hatch" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="lh-e03" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
-              <line x1="0" y1="0" x2="0" y2="4" stroke="#fbbf24" stroke-width="1" stroke-opacity="0.7"/>
-            </pattern>
-          </defs>
-          <rect width="14" height="14" fill="url(#lh-e03)" rx="1"/>
-          <rect width="14" height="14" fill="none" stroke="#fbbf24" stroke-width="1.2" stroke-opacity="0.75" rx="1"/>
-        </svg>
-        <span class="legenda-label">Entrega 03</span>
-      </div>
+      <div id="legenda-entregas"></div>
     </div>
   </div>
 
@@ -707,13 +677,66 @@ L.tileLayer(
     }
   }
 
-  // Cores das camadas de Entrega
-  const coresEntregas = {
-    "entrega01": { stroke: "#38bdf8", strokeOpacity: 0.80, fillOpacity: 0.06 },
-    "entrega02": { stroke: "#34d399", strokeOpacity: 0.80, fillOpacity: 0.06 },
-    "entrega03": { stroke: "#fbbf24", strokeOpacity: 0.80, fillOpacity: 0.06 },
-    "entrega04": { stroke: "#c084fc", strokeOpacity: 0.80, fillOpacity: 0.06 }
+  // Gera uma cor ao longo de um degradê "frio → quente" (ciano → laranja),
+  // proporcional à posição da entrega na sequência (1 = mais frio, N = mais quente)
+  function hslParaHex(h, s, l) {
+    s /= 100; l /= 100
+    const k = n => (n + h / 30) % 12
+    const a = s * Math.min(l, 1 - l)
+    const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))
+    const toHex = x => Math.round(255 * x).toString(16).padStart(2, '0')
+    return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`
   }
+
+  function corEntregaGradiente(indice, total) {
+    // Percorre ciano → azul → violeta → rosa → laranja (o caminho "longo" do
+    // círculo cromático), contornando de propósito a faixa verde/amarela já
+    // usada por CNFP e MapBiomas, para não confundir com essas camadas.
+    const hueInicio        = 195 // ciano
+    const hueFimSemLimite  = 390 // = 30 (laranja) após o módulo 360
+    const t   = total > 1 ? (indice - 1) / (total - 1) : 0
+    const hue = (hueInicio + (hueFimSemLimite - hueInicio) * t) % 360
+    return hslParaHex(hue, 78, 62)
+  }
+
+  // Total de entregas atualmente publicadas — some 1 aqui quando chegar a Entrega 10, 11...
+  const TOTAL_ENTREGAS = 9
+
+  // Cores das camadas de Entrega, geradas automaticamente em degradê
+  const coresEntregas = {}
+  for (let i = 1; i <= TOTAL_ENTREGAS; i++) {
+    const chave = "entrega" + String(i).padStart(2, "0")
+    coresEntregas[chave] = {
+      stroke: corEntregaGradiente(i, TOTAL_ENTREGAS),
+      strokeOpacity: 0.80,
+      fillOpacity: 0.06
+    }
+  }
+
+  // Legenda das Entregas: hatches individuais + barra de gradiente contínua
+  const legendaEntregas = document.getElementById("legenda-entregas")
+  Object.entries(coresEntregas).forEach(([chave, cor], idx) => {
+    const num = String(idx + 1).padStart(2, "0")
+    legendaEntregas.innerHTML += `
+      <div class="legenda-item">
+        <svg class="legenda-hatch" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="lh-${chave}" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="4" stroke="${cor.stroke}" stroke-width="1" stroke-opacity="0.7"/>
+            </pattern>
+          </defs>
+          <rect width="14" height="14" fill="url(#lh-${chave})" rx="1"/>
+          <rect width="14" height="14" fill="none" stroke="${cor.stroke}" stroke-width="1.2" stroke-opacity="0.75" rx="1"/>
+        </svg>
+        <span class="legenda-label">Entrega ${num}</span>
+      </div>`
+  })
+
+  const paradasGradiente = Object.values(coresEntregas).map(c => c.stroke).join(", ")
+  document.getElementById("barra-gradiente-entregas").style.background =
+    `linear-gradient(to right, ${paradasGradiente})`
+  document.getElementById("label-ultima-entrega").textContent =
+    String(TOTAL_ENTREGAS).padStart(2, "0")
 
   const legendaBlocos = document.getElementById("legenda-blocos")
   Object.entries(coresBlocos).forEach(([id, cor]) => {
@@ -812,10 +835,16 @@ L.tileLayer(
     fetchGeo("Entrega_01_limite_ficheiros.geojson"),
     fetchGeo("Entrega_02_limite_ficheiros.geojson"),
     fetchGeo("Entrega_03_limite_ficheiros.geojson"),
-    fetchGeo("ENTREGA_04-09_LIMITE_FICHEIROS.geojson"),
+    fetchGeo("ENTREGA_04_LIMITE_FICHEIROS.geojson"),
+    fetchGeo("ENTREGA_05_LIMITE_FICHEIROS.geojson"),
+    fetchGeo("ENTREGA_06_LIMITE_FICHEIROS.geojson"),
+    fetchGeo("ENTREGA_07_LIMITE_FICHEIROS.geojson"),
+    fetchGeo("ENTREGA_08_LIMITE_FICHEIROS.geojson"),
+    fetchGeo("ENTREGA_09_LIMITE_FICHEIROS.geojson"),
   ]).then(([estados, municipios, cnfp, planoVoo, sicar,
             disp1, ctanec, ctanec2, disp2, br319, sigef, ti, sitios,
-            entrega01, entrega02, entrega03, entrega04]) => {
+            entrega01, entrega02, entrega03, entrega04, entrega05,
+            entrega06, entrega07, entrega08, entrega09]) => {
 
     document.getElementById("spinner").style.display = "none"
 
@@ -870,6 +899,11 @@ L.tileLayer(
     criarCamadaEntrega(entrega02, coresEntregas.entrega02, "Entrega 02").addTo(map)
     criarCamadaEntrega(entrega03, coresEntregas.entrega03, "Entrega 03").addTo(map)
     criarCamadaEntrega(entrega04, coresEntregas.entrega04, "Entrega 04").addTo(map)
+    criarCamadaEntrega(entrega05, coresEntregas.entrega05, "Entrega 05").addTo(map)
+    criarCamadaEntrega(entrega06, coresEntregas.entrega06, "Entrega 06").addTo(map)
+    criarCamadaEntrega(entrega07, coresEntregas.entrega07, "Entrega 07").addTo(map)
+    criarCamadaEntrega(entrega08, coresEntregas.entrega08, "Entrega 08").addTo(map)
+    criarCamadaEntrega(entrega09, coresEntregas.entrega09, "Entrega 09").addTo(map)
 
     registrar("sicar", L.geoJSON(sicar, {
       pane: 'pane-sicar',
