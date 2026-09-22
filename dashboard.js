@@ -1,38 +1,3 @@
-/* ============================================================
-   dashboard.js — Painel de Métricas | Amazônia Revelada
-   ------------------------------------------------------------
-   Módulo independente. Todo o cálculo geoespacial (Turf.js) e a
-   interface do painel vivem aqui — nada disso está no index.html.
-
-   Como usar no index.html:
-     1) Incluir, em <head>, ANTES ou DEPOIS do script principal
-        (a ordem não importa, tudo roda dentro de "load"):
-          <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-          <script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-          <script src="dashboard.js"></script>
-
-     2) Depois que as camadas terminarem de carregar (dentro do
-        .then() do Promise.all do index.html), chamar:
-
-          window.iniciarDashboard({
-            planoVoo, cnfp, ti, sicar,      // GeoJSON brutos (não a layer do Leaflet)
-            entregas: [
-              { nome: "Entrega 01", geojson: entrega01, cor: coresEntregas.entrega01.stroke },
-              ...
-            ],
-            coresCNFP,       // mesmo objeto já usado no index.html
-            coresBlocos,     // idem
-            sicarCorBase,    // idem
-            getFiltrosSicarAtivos: () => ({
-              tipos: Array.from(tiposAtivos),
-              status: Array.from(statusAtivos)
-            })
-          })
-
-   O módulo cria sozinho um botão flutuante ("📊") e o painel —
-   nenhum HTML/CSS precisa existir de antemão no index.html.
-   ============================================================ */
-
 (function () {
   "use strict";
 
